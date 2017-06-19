@@ -5,7 +5,7 @@
 #   Author:       root
 #   Email:        493164984@qq.com
 #   DateTime:     2017-06-18 18:04:23
-#   ModifiedTime: 2017-06-19 17:39:44
+#   ModifiedTime: 2017-06-20 00:25:24
 
 JLLPATH="$(which $0)"
 JLLPATH="$(dirname ${JLLPATH})"
@@ -41,15 +41,21 @@ standard RTP and RTSP protocols. https://macosforge.github.io/dss/
 
 
 
-${Byellow}${Fblack} Building Book is writen by _jielong_lin_                             ${AC}
+${Byellow}${Fblack} Building Book is writen by _jielong_lin_ @2017-06-20                 ${AC}
 
+${Fseablue}build all:${AC}
+jl@S:~$ ${Fgreen}cd dss${AC}
+jl@S:~/dss$ ${Fgreen}./buildtarball${AC}
+
+
+
+
+${Byellow}${Fblack} Building Book is writen by _jielong_lin_ @2017-06-19                 ${AC}
 
 ${Fseablue}cleaning:${AC}
 ./Buildit clean
 rm -rvf DarwinStreamingSrvr*
 rm -rvf StreamingProxy*
-
-
 
 ${Fseablue}0).Apply the patchs before compiling: [note: the patchs are applied in codes] ${AC}
 jl@S:~$ ${Fgreen}cd dss${AC}

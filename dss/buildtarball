@@ -37,6 +37,12 @@ then :
 fi
 
 ./Buildit clean
+### JLL.S20170620: customization for clean commandline ###
+read -p "JLL:  Next to build all if press [y], or exit:   "  __myChoice
+if [ x"${__myChoice}" != x"y" ]; then
+    exit 0
+fi
+### JLL.E20170620: customization for clean commandline ###
 ./Buildit
 
 if [ ! -f DarwinStreamingServer ];
