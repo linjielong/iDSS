@@ -129,7 +129,7 @@ jl@S:~/dss$ ${Fgreen}sudo /usr/local/sbin/streamingadminserver.pl${AC}
 #以上两项在刚安装好的时候会自动启动，不需手动执行
 
 Trick:
-自动运行流媒体服务器序非常简单，把上述命令添加在/etc/rc.d/rc.local脚本中即可。
+自动运行流媒体服务器序非常简单，把上述命令添加在/etc/rc.local脚本中即可。
 最后在服务器输入 http://你的IP:1220/来访问web管理 
 默认的媒体文件存放在/usr/local/movies 你可以在web管理面板修改这个路径。
 
