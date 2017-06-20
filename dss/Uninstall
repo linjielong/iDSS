@@ -1,0 +1,137 @@
+#!/bin/bash
+#
+# Modified from Install by jielong.lin @2017-06-20
+#
+# Uninstall script for the Darwin Streaming Server
+# source release
+
+
+echo;echo uninstalling Darwin Streaming Server;echo
+
+INSTALL_OS=`uname`
+
+if [ $INSTALL_OS != "SunOS" ]; then
+	USERID=`id -u`
+else
+	USERID=`/usr/xpg4/bin/id -u`
+fi
+
+if [ $USERID = 0 ]; then
+
+	echo Checking for and Killing currently running Darwin Streaming Server
+	if [ `uname` = "FreeBSD" ]; then
+		ps -ax | awk '/DarwinStreamingServer/ {print $1}' | xargs kill -9  
+		ps -ax | awk '/streamingadminserver.pl/ {print $1}' | xargs kill -9  
+	fi
+
+	if [ `uname` = "Linux" ]; then
+		ps ax | awk '{print $1" " $5}' | awk '/DarwinStreamingServer/ {print $1}' | xargs -r kill -9  
+		ps ax | awk '/streamingadminserver.pl/ {print $1}' | xargs -r kill -9  
+	fi
+
+	if [ `uname` = "SunOS" -o `uname` = "IRIX" -o `uname` = "IRIX64" ]; then
+		ps -aef | awk '/DarwinStreamingServer/ {print $2}' | xargs -n 2 kill -9  
+		ps -aef | awk '/streamingadminserver.pl/ {print $2}' | xargs -n 1 kill -9 
+	fi
+
+	echo;echo Darwin Streaming Server Cleanup all users;echo
+	# Remove the default admin username to /etc/streaming/qtusers
+	/usr/local/bin/qtpasswd -F -d 'aGFja21l' > /dev/null
+	
+    admin_username=$(grep -E 'admin:' /etc/streaming/qtgroups 2>/dev/null | sed 's/admin://g')
+	# Delete admin username to /etc/streaming/qtusers
+    for __admin_un in ${admin_username}; do
+	    [ x"$__admin_un" != x ] && /usr/local/bin/qtpasswd -F -d $__admin_un
+    done
+    
+    username=$(grep -E '^.*:' /etc/streaming/qtusers 2>/dev/null)
+    for __un in ${username}; do
+        __un=${__un%%:*}
+        [ x"$un" != x ] && /usr/local/bin/qtpasswd -F -d $un
+    done
+
+## REMOVED OLD VERSION ##
+
+	echo Removing previous versions of Darwin Streaming Server
+	if [ -f /usr/local/sbin/DarwinStreamingServer ]; then
+		echo removing /usr/local/sbin/DarwinStreamingServer
+		rm -f /usr/local/sbin/DarwinStreamingServer 
+	fi
+	
+	if [ -f /usr/local/bin/PlaylistBroadcaster ]; then
+		echo removing /usr/local/bin/PlaylistBroadcaster
+		rm -f /usr/local/bin/PlaylistBroadcaster
+	fi
+	
+	if [ -f /usr/local/bin/MP3Broadcaster ]; then
+		echo removing /usr/local/bin/MP3Broadcaster
+		rm -f /usr/local/bin/MP3Broadcaster
+	fi
+	
+	if [ -f /usr/local/bin/qtpasswd ]; then
+		echo removing /usr/local/bin/qtpasswd
+		rm -f /usr/local/bin/qtpasswd
+	fi
+
+	if [ -f /usr/local/sbin/streamingadminserver.pl ]; then
+		echo removing /usr/local/sbin/streamingadminserver.pl
+		rm -f /usr/local/sbin/streamingadminserver.pl
+	fi
+
+	if [ -f /usr/local/bin/streamingadminserver.pl ]; then
+		echo removing /usr/local/bin/streamingadminserver.pl
+		rm -f /usr/local/bin/streamingadminserver.pl
+	fi
+
+	if [ -f /usr/local/bin/SpamPro ]; then
+		echo removing /usr/local/bin/SpamPro
+		rm -f /usr/local/bin/SpamPro
+	fi
+
+if [ -e StreamingLoadTool ]; then
+	if [ -f /usr/local/bin/StreamingLoadTool ]; then
+		echo removing /usr/local/bin/StreamingLoadTool
+		rm -f /usr/local/bin/StreamingLoadTool
+	fi
+fi
+	echo
+	
+## Remove CONFIG FILES ##
+	echo Removing config files
+
+	if [ -e /etc/streaming ]; then
+		echo removing /etc/streaming
+		rm -rf /etc/streaming
+	fi
+
+
+	if [ -d /usr/local/sbin/StreamingServerModules ]; then
+		echo Removing "/usr/local/sbin/StreamingServerModules" directory
+		rm -rf /usr/local/sbin/StreamingServerModules
+	fi
+	if [ -e $INSTALLROOT/usr/local/bin/createuserstreamingdir ]; then
+		echo Removing "${INSTALLROOT}/usr/local/bin/createuserstreamingdir"
+		rm -rf $INSTALLROOT/usr/local/bin/createuserstreamingdir 
+	fi
+	if [ -e /usr/local/bin/createuserstreamingdir ]; then
+		echo Removing "/usr/local/bin/createuserstreamingdir"
+		rm -rf /usr/local/bin/createuserstreamingdir 
+    fi
+	
+	if [ -d /var/streaming ]; then
+		echo Removing "/var/streaming" directory
+		rm -rf /var/streaming
+	fi
+	
+	if [ -d /usr/local/movies ]; then
+		echo Removing "/usr/local/movies" directory
+		rm -rf /usr/local/movies
+	fi
+
+	
+	echo Cleanup Complete!
+else
+	echo "Unable to perform uninstall"
+	echo "You must be logged in as root to uninstall Darwin Streaming Server";echo
+	exit 1
+fi

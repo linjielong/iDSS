@@ -38,7 +38,9 @@ fi
 
 ./Buildit clean
 ### JLL.S20170620: customization for clean commandline ###
+echo
 read -p "JLL:  Next to build all if press [y], or exit:   "  __myChoice
+echo
 if [ x"${__myChoice}" != x"y" ]; then
     exit 0
 fi
@@ -87,6 +89,14 @@ fi
     fi
 
 ./DSS_MakeRoot -f DarwinStreamingSrvr$1-$PLAT $1
+### JLL.S20170620: Customize the Uninstall relative to Install ###
+if [ -d "$(pwd)/DarwinStreamingSrvr$1-$PLAT" ]; then
+    if [ -e "$(pwd)/Uninstall" ]; then
+        cp -rf $(pwd)/Uninstall $(pwd)/DarwinStreamingSrvr$1-$PLAT >/dev/null
+        chmod +x $(pwd)/DarwinStreamingSrvr$1-$PLAT/Uninstall >/dev/null 
+    fi
+fi
+### JLL.E20170620: Customize the Uninstall relative to Install ###
 tar cvf DarwinStreamingSrvr$1-$PLAT.tar DarwinStreamingSrvr$1-$PLAT
 gzip DarwinStreamingSrvr$1-$PLAT.tar
 
