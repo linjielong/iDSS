@@ -5,7 +5,7 @@
 #   Author:       root
 #   Email:        493164984@qq.com
 #   DateTime:     2017-06-18 18:04:23
-#   ModifiedTime: 2017-06-20 01:32:39
+#   ModifiedTime: 2017-06-20 15:55:50
 
 JLLPATH="$(which $0)"
 JLLPATH="$(dirname ${JLLPATH})"
@@ -30,9 +30,12 @@ JLLPATH="$(dirname ${JLLPATH})"
   Bseablue=${ESC}[46m
   Bwhite=${ESC}[47m
 
+nid=1
 more >&1<<EOF
 
-${Byellow}${Fblack} dss - Darwin Streaming Server                                        ${AC}
+${Byellow}${Fblack}=========================================================================${AC}
+${Byellow}${Fblack} dss - Darwin Streaming Server                                           ${AC}
+${Byellow}${Fblack}=========================================================================${AC}
 https://github.com/macosforge/dss
 
 Darwin Streaming Server is Apple's open source version of the QuickTime Streaming Server 
@@ -40,22 +43,101 @@ technology allowing you to send streaming media across the Internet using the in
 standard RTP and RTSP protocols. https://macosforge.github.io/dss/
 
 
-${Byellow}${Fblack} Building Book is writen by _jielong_lin_ @2017-06-20                 ${AC}
-${Fseablue}Fixing the issue about administrative page is none text:${AC}
-${Fseablue}it needs perl version isnot more than 5.8${AC}
-jl@S:~$ ${Fyellow}./Configure -des -Dprefix=/fight4honor/github.com/linjielong/iDSS/localperl${AC}
+${Byellow}${Fblack}=========================================================================${AC}
+${Byellow}${Fblack} Update and Release Note by _jielong_lin_ @2017-06-20                    ${AC}
+${Byellow}${Fblack}=========================================================================${AC}
+
+${Bseablue}${Fblack}$((nid=1)):::${AC}
+${Fseablue}Try to solve the issue about empty administrative page for TEXT${AC}
+${Fseablue}-----------------------------------------------------------------------${AC}
+${Fseablue}Reproduction Step: ${AC}
+${Fseablue}  Open ${Fblue}"http://[YourDssIP]:1220"${Fseablue} in the web browser ${AC} 
+${Fseablue}-----------------------------------------------------------------------${AC}
+${Fgreen}As I known, it needs perl version isnot more than 5.8, so do the follows:${AC}
+jl@S:.$
+jl@S:.$ Download the perl-5.8.9.tar.gz and ${Fyellow} tar -zvxf perl-5.8.9.tar.gz ${AC}
+jl@S:.$ ${Fyellow}cd perl-5.8.9${AC}
+jl@S:.$
+jl@S:~$ ${Fyellow}vim Makefile.SH${AC}
 ...
-jl@S:~$ ${Fyellow}vim Makefile
-${Byellow}${Fblack} Building Book is writen by _jielong_lin_ @2017-06-19                 ${AC}
+214 \$spitshell >Makefile <<!GROK!THIS!
+215 # Makefile.SH
+216 # This file is derived from Makefile.SH.  Any changes made here will
+217 # be lost the next time you run Configure.
+218 #  Makefile is used to generate \$firstmakefile.  The only difference
+219 #  is that $firstmakefile has the dependencies filled in at the end.
+220 #
+221 #
+222 # I now supply perly.c with the kits, so don't remake perly.c without byacc
+223 BYACC = \$byacc
+224 CC = \$cc
+225 LD = \$ld
+226
+227 ${Fyellow}### JLL.S20170620: fixing for compiling error ###${AC}
+228 ${Fyellow}#LDFLAGS = $ldflags${AC}
+229 ${Fyellow}#CLDFLAGS = $ldflags${AC}
+230 ${Fyellow}LDFLAGS = $ldflags -lm${AC}
+231 ${Fyellow}CLDFLAGS = $ldflags -lm${AC}
+232 ${Fyellow}### JLL.E20170620: fixing for compiling error ###${AC}
+233
+234 mallocsrc = \$mallocsrc
+235 mallocobj = \$mallocobj
+...
+jl@S:.$ ${Fyellow}./Configure -des -Dprefix=\$(realpath ..)/localperl${AC}
+...
 
-${Fseablue}build all:${AC}
-jl@S:~$ ${Fgreen}cd dss${AC}
-jl@S:~/dss$ ${Fgreen}./buildtarball${AC}
+
+
+${Byellow}${Fblack}=========================================================================${AC}
+${Byellow}${Fblack} compiling and package guide by _jielong_lin_ @2017-06-19                ${AC}
+${Byellow}${Fblack}=========================================================================${AC}
+
+${Bseablue}${Fblack}$((nid=1)):::${AC}
+${Fseablue}only compile source code${AC}
+jl@S:.$
+jl@S:.$ ${Fyellow}cd dss${AC}
+jl@S:.$ ${Fyellow}./Buildit 2>&1 | tee make.log${AC}
+...
+jl@S:.$
+jl@S:.$
+
+${Bseablue}${Fblack}$((++nid)):::${AC}
+${Fseablue}only clean up compiled files${AC}
+jl@S:.$
+jl@S:.$ ${Fyellow}cd dss${AC}
+jl@S:.$ ${Fyellow}./Buildit clean 2>&1 | tee make.log${AC}
+...
+jl@S:.$
+${Fseablue}OR${AC}
+jl@S:.$
+jl@S:.$ ${Fyellow}cd dss${AC}
+jl@S:.$ ${Fyellow}./buildtarball 2>&1 | tee make.log${AC}
+...
+Building StreamingLoadTool for Linux.x86_64 with gcc
+...
+${Fgreen}JLL:  Next to build all if press [y], or exit: ${Fyellow}pressed [Enter] directly${AC}
+jl@S:.$
+jl@S:.$
+
+${Bseablue}${Fblack}$((++nid)):::${AC}
+${Fseablue}compile source code then package all productions${AC}
+jl@S:.$
+jl@S:.$ ${Fyellow}cd dss${AC}
+jl@S:.$ ${Fyellow}./buildtarball 2>&1 | tee make.log${AC}
+...
+Building StreamingLoadTool for Linux.x86_64 with gcc
+...
+${Fgreen}JLL:  Next to build all if press [y], or exit: ${Fyellow}pressed [y][Enter] directly${AC}
+...
+jl@S:.$
+jl@S:.$
 
 
 
 
-${Byellow}${Fblack} Building Book is writen by _jielong_lin_ @2017-06-18                 ${AC}
+${Byellow}${Fblack}=========================================================================${AC}
+${Byellow}${Fblack} Building Book is writen by _jielong_lin_ @2017-06-18                    ${AC}
+${Byellow}${Fblack}=========================================================================${AC}
 
 ${Fseablue}cleaning:${AC}
 ./Buildit clean
@@ -84,7 +166,7 @@ ${Fpink}DarwinStreamingServer failed to build!${AC}
 ${Fpink}Buildit Failed. Exiting!${AC}
 jl@S:~/dss$ ${Fgreen}vim Makefile.POSIX${AC}
 ...
-LIBS = $(CORE_LINK_LIBS) -lCommonUtilitiesLib -lQTFileLib -ldl
+LIBS = \$(CORE_LINK_LIBS) -lCommonUtilitiesLib -lQTFileLib -ldl
 ... 
 jl@S:~/dss$ ${Fgreen}vim QTFileTools/QTFileInfo.tproj/Makefile.POSIX${AC}
 jl@S:~/dss$ ${Fgreen}vim QTFileTools/QTFileTest.tproj/Makefile.POSIX${AC}
