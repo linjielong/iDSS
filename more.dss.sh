@@ -5,7 +5,7 @@
 #   Author:       root
 #   Email:        493164984@qq.com
 #   DateTime:     2017-06-18 18:04:23
-#   ModifiedTime: 2017-06-20 15:55:50
+#   ModifiedTime: 2017-06-21 01:10:57
 
 JLLPATH="$(which $0)"
 JLLPATH="$(dirname ${JLLPATH})"
@@ -58,7 +58,7 @@ jl@S:.$
 jl@S:.$ Download the perl-5.8.9.tar.gz and ${Fyellow} tar -zvxf perl-5.8.9.tar.gz ${AC}
 jl@S:.$ ${Fyellow}cd perl-5.8.9${AC}
 jl@S:.$
-jl@S:~$ ${Fyellow}vim Makefile.SH${AC}
+jl@S:.$ ${Fyellow}vim Makefile.SH${AC}
 ...
 214 \$spitshell >Makefile <<!GROK!THIS!
 215 # Makefile.SH
@@ -74,10 +74,10 @@ jl@S:~$ ${Fyellow}vim Makefile.SH${AC}
 225 LD = \$ld
 226
 227 ${Fyellow}### JLL.S20170620: fixing for compiling error ###${AC}
-228 ${Fyellow}#LDFLAGS = $ldflags${AC}
-229 ${Fyellow}#CLDFLAGS = $ldflags${AC}
-230 ${Fyellow}LDFLAGS = $ldflags -lm${AC}
-231 ${Fyellow}CLDFLAGS = $ldflags -lm${AC}
+228 ${Fyellow}#LDFLAGS = \$ldflags${AC}
+229 ${Fyellow}#CLDFLAGS = \$ldflags${AC}
+230 ${Fyellow}LDFLAGS = \$ldflags -lm${AC}
+231 ${Fyellow}CLDFLAGS = \$ldflags -lm${AC}
 232 ${Fyellow}### JLL.E20170620: fixing for compiling error ###${AC}
 233
 234 mallocsrc = \$mallocsrc
