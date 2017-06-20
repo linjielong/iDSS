@@ -1,4 +1,4 @@
-#!/fight4honor/github.com/linjielong/iDSS/localperl/bin/perl
+#!/usr/bin/perl
 # 
 # @APPLE_LICENSE_HEADER_START@
 #
