@@ -5,7 +5,7 @@
 #   Author:       root
 #   Email:        493164984@qq.com
 #   DateTime:     2017-06-21 00:09:54
-#   ModifiedTime: 2017-06-21 01:05:35
+#   ModifiedTime: 2017-06-21 01:14:52
 
 JLLPATH="$(which $0)"
 JLLPATH="$(dirname ${JLLPATH})"
@@ -26,7 +26,7 @@ if [ x"${_MenuID}" = x"${GvPageMenuUtilsContent[0]}" ]; then
 more >&1<<EOF
 ${Bseablue}${Fblack}compile perl${AC}
 EOF
-
+    
     exit 0
 fi
 if [ x"${_MenuID}" = x"${GvPageMenuUtilsContent[1]}" ]; then
