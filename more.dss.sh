@@ -5,7 +5,7 @@
 #   Author:       root
 #   Email:        493164984@qq.com
 #   DateTime:     2017-06-18 18:04:23
-#   ModifiedTime: 2017-06-20 00:25:24
+#   ModifiedTime: 2017-06-20 01:32:39
 
 JLLPATH="$(which $0)"
 JLLPATH="$(dirname ${JLLPATH})"
@@ -40,8 +40,13 @@ technology allowing you to send streaming media across the Internet using the in
 standard RTP and RTSP protocols. https://macosforge.github.io/dss/
 
 
-
 ${Byellow}${Fblack} Building Book is writen by _jielong_lin_ @2017-06-20                 ${AC}
+${Fseablue}Fixing the issue about administrative page is none text:${AC}
+${Fseablue}it needs perl version isnot more than 5.8${AC}
+jl@S:~$ ${Fyellow}./Configure -des -Dprefix=/fight4honor/github.com/linjielong/iDSS/localperl${AC}
+...
+jl@S:~$ ${Fyellow}vim Makefile
+${Byellow}${Fblack} Building Book is writen by _jielong_lin_ @2017-06-19                 ${AC}
 
 ${Fseablue}build all:${AC}
 jl@S:~$ ${Fgreen}cd dss${AC}
@@ -50,7 +55,7 @@ jl@S:~/dss$ ${Fgreen}./buildtarball${AC}
 
 
 
-${Byellow}${Fblack} Building Book is writen by _jielong_lin_ @2017-06-19                 ${AC}
+${Byellow}${Fblack} Building Book is writen by _jielong_lin_ @2017-06-18                 ${AC}
 
 ${Fseablue}cleaning:${AC}
 ./Buildit clean
