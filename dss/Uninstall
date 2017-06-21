@@ -25,8 +25,9 @@ if [ $USERID = 0 ]; then
 	fi
 
 	if [ `uname` = "Linux" ]; then
-		ps ax | awk '{print $1" " $5}' | awk '/DarwinStreamingServer/ {print $1}' | xargs -r kill -9  
-		ps ax | awk '/streamingadminserver.pl/ {print $1}' | xargs -r kill -9  
+		ps ax | awk '{print $1" " $5}' | awk '/DarwinStreamingServer/ {print $1}' \
+              | xargs -r kill -9 2>/dev/null 
+		ps ax | awk '/streamingadminserver.pl/ {print $1}' | xargs -r kill -9 2>/dev/null 
 	fi
 
 	if [ `uname` = "SunOS" -o `uname` = "IRIX" -o `uname` = "IRIX64" ]; then

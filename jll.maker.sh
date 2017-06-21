@@ -757,8 +757,8 @@ EOF
 _JLLCFG_SRC_DSS="$(pwd)/dss"
 _JLLCFG_BIN_DSS="/usr/local/sbin/DarwinStreamingServer"
 declare -a _Dss_lstTarget=(
-# M DarwinStreamingServer
-# M StreamingLoadTool/StreamingLoadTool
+    DarwinStreamingServer
+    StreamingLoadTool/StreamingLoadTool
     APICommonCode/QTSSModuleUtils.o
     APICommonCode/QTSSRollingLog.o
     APICommonCode/SDPSourceInfo.o
