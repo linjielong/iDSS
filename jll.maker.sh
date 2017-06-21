@@ -5,7 +5,7 @@
 #   Author:       root
 #   Email:        493164984@qq.com
 #   DateTime:     2017-06-21 00:09:54
-#   ModifiedTime: 2017-06-21 19:47:00
+#   ModifiedTime: 2017-06-21 21:26:42
 
 JLLPATH="$(which $0)"
 JLLPATH="$(dirname ${JLLPATH})"
@@ -756,6 +756,10 @@ EOF
 
 _JLLCFG_SRC_DSS="$(pwd)/dss"
 _JLLCFG_BIN_DSS="/usr/local/sbin/DarwinStreamingServer"
+_JLLCFG_CONTENT_DSS="elif [ -x ${_JLLCFG_BIN_PERL} ]; then \
+    perldef=${_JLLCFG_BIN_PERL} \
+"
+
 declare -a _Dss_lstTarget=(
     DarwinStreamingServer
     StreamingLoadTool/StreamingLoadTool
@@ -978,8 +982,31 @@ EOF
                 _FN_exit
             fi
             cd - >/dev/null
+
+            ##
+            ## Customize for using the specified perl
+            ##
+            _isCHK=$(grep -En "perldef=${_JLLCFG_BIN_PERL}" \
+                     ${_JLLCFG_SRC_DSS}/DarwinStreamingSrvr-$(uname)/Install 2>/dev/null)
+            if [ x"${_isCHK}" = x ]; then
+                _CNT=0
+                _Lines=${_isCHK%%:*}
+                for _Line in ${_Lines}; do
+                  _CNT=$(_CNT+1) 
+                done
+                if [ ${_CNT} -eq 1 ]; then
+                    sed -e "${_Lines} a ${_JLLCFG_CONTENT_DSS}" -i \
+                        ${_JLLCFG_SRC_DSS}/DarwinStreamingSrvr-$(uname)/Install
+                else
+                    echo -e \
+                        "${Bred}${Fyellow}JLL-Exit:${AC}" \
+                        "${Fred}DarwinStreamingSrvr-$(uname)/Install${AC} is invalid"
+                    _FN_clean_dss
+                    _FN_exit
+                fi
+            fi
             cd ${_JLLCFG_SRC_DSS}/DarwinStreamingSrvr-$(uname)
-            ./Install
+            #./Install
         fi
         cd - >/dev/null
         echo
