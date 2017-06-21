@@ -224,12 +224,8 @@ BYACC = $byacc
 CC = $cc
 LD = $ld
 
-### JLL.S20170621: Solve the compiled error ###
-#LDFLAGS = $ldflags
-#CLDFLAGS = $ldflags
-LDFLAGS = $ldflags -lm
-CLDFLAGS = $ldflags -lm
-### JLL.E20170621: Solve the compiled error ###
+LDFLAGS = $ldflags
+CLDFLAGS = $ldflags
 
 mallocsrc = $mallocsrc
 mallocobj = $mallocobj
@@ -284,7 +280,10 @@ nonxs_ext = $nonxs_list
 ext = \$(dynamic_ext) \$(static_ext) \$(nonxs_ext)
 DYNALOADER = DynaLoader\$(OBJ_EXT)
 
-libs = $perllibs $cryptlib
+### JLL.S20170621: Solve issue about undefined reference to 'pow','clock_nanosleep' and so on ###
+#libs = $perllibs $cryptlib
+libs = $perllibs $cryptlib -lm -lrt
+### JLL.E20170621: Solve issue about undefined reference to 'pow','clock_nanosleep' and so on ###
 
 public = perl\$(EXE_EXT) $suidperl utilities translators
 
