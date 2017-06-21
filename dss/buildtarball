@@ -39,7 +39,8 @@ fi
 ./Buildit clean
 ### JLL.S20170620: customization for clean commandline ###
 echo
-read -p "JLL:  Next to build all if press [y], or exit:   "  __myChoice
+#read -p "JLL:  Next to build all if press [y], or exit:   "  __myChoice
+__myChoice=y
 echo
 if [ x"${__myChoice}" != x"y" ]; then
     exit 0

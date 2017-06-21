@@ -5,7 +5,7 @@
 #   Author:       root
 #   Email:        493164984@qq.com
 #   DateTime:     2017-06-21 00:09:54
-#   ModifiedTime: 2017-06-21 18:38:58
+#   ModifiedTime: 2017-06-21 19:47:00
 
 JLLPATH="$(which $0)"
 JLLPATH="$(dirname ${JLLPATH})"
@@ -727,21 +727,22 @@ EOF
             _FN_exit 
         fi
         cd ${_JLLCFG_SRC_PERL}
-        [ x"$(ls | grep -Ei 'makefile ')" != x ] && make clean
+        [ x"$(ls | grep -Ei '^makefile$')" != x ] && make clean
         [ x"$(ls | grep -Ei 'make_perl_at_.*\.log')" != x ] && rm -rf make_perl_at_*.log
         ./Configure -des -Dprefix=${_JLLCFG_BIN_PERL} 2>&1 | tee make_perl_at_${_DT_}.log
         if [ x"$(ls | grep -Ei '^makefile$')" != x ]; then
             make 2>&1 | tee -a make_perl_at_${_DT_}.log
             make install 2>&1 | tee -a make_perl_at_${_DT_}.log
         else
-             echo -e "${Bred}${Fyellow}JLL-Exit:${AC} ${Fred}perl${AC} is configured failure"
-             cd - >/dev/null
+            echo -e "${Bred}${Fyellow}JLL-Exit:${AC} ${Fred}perl${AC} is configured failure"
+            cd - >/dev/null
             _FN_exit 
         fi 
         cd - >/dev/null
         echo
         if [ ! -e "${_JLLCFG_BIN_PERL}" ]; then
-            echo -e "${Bred}${Fyellow}JLL-Exit:${AC} ${Fred}perl${AC} compile or install failure"
+            echo -e \
+            "${Bred}${Fyellow}JLL-Exit:${AC} ${Fred}perl${AC} is compiled or installed failure"
             _FN_exit
         else
             echo -e "JLL: ${Fred}perl${AC} was installed to" \
@@ -755,6 +756,199 @@ EOF
 
 _JLLCFG_SRC_DSS="$(pwd)/dss"
 _JLLCFG_BIN_DSS="/usr/local/sbin/DarwinStreamingServer"
+declare -a _Dss_lstTarget=(
+# M DarwinStreamingServer
+# M StreamingLoadTool/StreamingLoadTool
+    APICommonCode/QTSSModuleUtils.o
+    APICommonCode/QTSSRollingLog.o
+    APICommonCode/SDPSourceInfo.o
+    APICommonCode/SourceInfo.o
+    APIModules/OSMemory_Modules/OSMemory_Modules.o
+    APIModules/QTSSDemoAuthorizationModule.bproj/QTSSDemoAuthorizationModule
+    APIModules/QTSSDemoAuthorizationModule.bproj/QTSSDemoAuthorizationModule.o
+    APIModules/QTSSHomeDirectoryModule/DirectoryInfo.o
+    APIModules/QTSSHomeDirectoryModule/QTSSHomeDirectoryModule
+    APIModules/QTSSHomeDirectoryModule/QTSSHomeDirectoryModule.o
+    APIModules/QTSSRawFileModule.bproj/QTSSRawFileModule
+    APIModules/QTSSRawFileModule.bproj/QTSSRawFileModule.o
+    APIModules/QTSSRefMovieModule/QTSSRefMovieModule
+    APIModules/QTSSRefMovieModule/QTSSRefMovieModule.o
+    APIModules/QTSSSpamDefenseModule.bproj/QTSSSpamDefenseModule
+    APIModules/QTSSSpamDefenseModule.bproj/QTSSSpamDefenseModule.o
+    APIStubLib/QTSS_Private.o
+    CommonUtilitiesLib/ConfParser.o
+    CommonUtilitiesLib/DateTranslator.o
+    CommonUtilitiesLib/EventContext.o
+    CommonUtilitiesLib/GetWord.o
+    CommonUtilitiesLib/IdleTask.o
+    CommonUtilitiesLib/MyAssert.o
+    CommonUtilitiesLib/OS.o
+    CommonUtilitiesLib/OSBufferPool.o
+    CommonUtilitiesLib/OSCodeFragment.o
+    CommonUtilitiesLib/OSCond.o
+    CommonUtilitiesLib/OSFileSource.o
+    CommonUtilitiesLib/OSHeap.o
+    CommonUtilitiesLib/OSMutex.o
+    CommonUtilitiesLib/OSMutexRW.o
+    CommonUtilitiesLib/OSQueue.o
+    CommonUtilitiesLib/OSRef.o
+    CommonUtilitiesLib/OSThread.o
+    CommonUtilitiesLib/QueryParamList.o
+    CommonUtilitiesLib/ResizeableStringFormatter.o
+    CommonUtilitiesLib/SDPUtils.o
+    CommonUtilitiesLib/Socket.o
+    CommonUtilitiesLib/SocketUtils.o
+    CommonUtilitiesLib/StrPtrLen.o
+    CommonUtilitiesLib/StringFormatter.o
+    CommonUtilitiesLib/StringParser.o
+    CommonUtilitiesLib/StringTranslator.o
+    CommonUtilitiesLib/TCPListenerSocket.o
+    CommonUtilitiesLib/TCPSocket.o
+    CommonUtilitiesLib/Task.o
+    CommonUtilitiesLib/TimeoutTask.o
+    CommonUtilitiesLib/Trim.o
+    CommonUtilitiesLib/UDPDemuxer.o
+    CommonUtilitiesLib/UDPSocket.o
+    CommonUtilitiesLib/UDPSocketPool.o
+    CommonUtilitiesLib/UserAgentParser.o
+    CommonUtilitiesLib/atomic.o
+    CommonUtilitiesLib/base64.o
+    CommonUtilitiesLib/daemon.o
+    CommonUtilitiesLib/ev.o
+    CommonUtilitiesLib/getopt.o
+    CommonUtilitiesLib/libCommonUtilitiesLib.a
+    CommonUtilitiesLib/md5.o
+    CommonUtilitiesLib/md5digest.o
+    DarwinStreamingSrvr-Linux.tar.gz
+    DarwinStreamingSrvr-Linux/
+    MP3Broadcaster/BroadcasterMain.o
+    MP3Broadcaster/MP3Broadcaster
+    MP3Broadcaster/MP3Broadcaster.o
+    MP3Broadcaster/MP3BroadcasterLog.o
+    MP3Broadcaster/MP3FileBroadcaster.o
+    MP3Broadcaster/MP3MetaInfoUpdater.o
+    OSMemoryLib/OSMemory.o
+    PlaylistBroadcaster.tproj/BCasterTracker.o
+    PlaylistBroadcaster.tproj/BroadcastLog.o
+    PlaylistBroadcaster.tproj/BroadcasterSession.o
+    PlaylistBroadcaster.tproj/NoRepeat.o
+    PlaylistBroadcaster.tproj/PLBroadcastDef.o
+    PlaylistBroadcaster.tproj/PickerFromFile.o
+    PlaylistBroadcaster.tproj/PlaylistBroadcaster
+    PlaylistBroadcaster.tproj/PlaylistBroadcaster.o
+    PlaylistBroadcaster.tproj/PlaylistPicker.o
+    PlaylistBroadcaster.tproj/playlist_SDPGen.o
+    PlaylistBroadcaster.tproj/playlist_SimpleParse.o
+    PlaylistBroadcaster.tproj/playlist_broadcaster.o
+    PlaylistBroadcaster.tproj/playlist_elements.o
+    PlaylistBroadcaster.tproj/playlist_lists.o
+    PlaylistBroadcaster.tproj/playlist_parsers.o
+    PlaylistBroadcaster.tproj/playlist_utils.o
+    PrefsSourceLib/FilePrefsSource.o
+    QTFileLib/QTAtom.o
+    QTFileLib/QTAtom.xo
+    QTFileLib/QTAtom_dref.o
+    QTFileLib/QTAtom_dref.xo
+    QTFileLib/QTAtom_elst.o
+    QTFileLib/QTAtom_elst.xo
+    QTFileLib/QTAtom_hinf.o
+    QTFileLib/QTAtom_hinf.xo
+    QTFileLib/QTAtom_mdhd.o
+    QTFileLib/QTAtom_mdhd.xo
+    QTFileLib/QTAtom_mvhd.o
+    QTFileLib/QTAtom_mvhd.xo
+    QTFileLib/QTAtom_stco.o
+    QTFileLib/QTAtom_stco.xo
+    QTFileLib/QTAtom_stsc.o
+    QTFileLib/QTAtom_stsc.xo
+    QTFileLib/QTAtom_stsd.o
+    QTFileLib/QTAtom_stsd.xo
+    QTFileLib/QTAtom_stss.o
+    QTFileLib/QTAtom_stss.xo
+    QTFileLib/QTAtom_stsz.o
+    QTFileLib/QTAtom_stsz.xo
+    QTFileLib/QTAtom_stts.o
+    QTFileLib/QTAtom_stts.xo
+    QTFileLib/QTAtom_tkhd.o
+    QTFileLib/QTAtom_tkhd.xo
+    QTFileLib/QTAtom_tref.o
+    QTFileLib/QTAtom_tref.xo
+    QTFileLib/QTFile.o
+    QTFileLib/QTFile.xo
+    QTFileLib/QTFile_FileControlBlock.o
+    QTFileLib/QTFile_FileControlBlock.xo
+    QTFileLib/QTHintTrack.o
+    QTFileLib/QTHintTrack.xo
+    QTFileLib/QTRTPFile.o
+    QTFileLib/QTRTPFile.xo
+    QTFileLib/QTTrack.o
+    QTFileLib/QTTrack.xo
+    QTFileLib/libQTFileExternalLib.a
+    QTFileLib/libQTFileLib.a
+    QTFileTools/QTBroadcaster.tproj/QTBroadcaster
+    QTFileTools/QTBroadcaster.tproj/QTBroadcaster.o
+    QTFileTools/QTFileInfo.tproj/QTFileInfo.o
+    QTFileTools/QTFileTest.tproj/QTFileTest.o
+    QTFileTools/QTRTPFileTest.tproj/QTRTPFileTest
+    QTFileTools/QTRTPFileTest.tproj/QTRTPFileTest.o
+    QTFileTools/QTRTPGen.tproj/QTRTPGen
+    QTFileTools/QTRTPGen.tproj/QTRTPGen.o
+    QTFileTools/QTSDPGen.tproj/QTSDPGen
+    QTFileTools/QTSDPGen.tproj/QTSDPGen.o
+    QTFileTools/QTSampleLister.tproj/QTSampleLister.o
+    QTFileTools/QTTrackInfo.tproj/QTTrackInfo.o
+    RTCPUtilitiesLib/RTCPAPPNADUPacket.o
+    RTCPUtilitiesLib/RTCPAPPPacket.o
+    RTCPUtilitiesLib/RTCPAPPQTSSPacket.o
+    RTCPUtilitiesLib/RTCPAckPacket.o
+    RTCPUtilitiesLib/RTCPPacket.o
+    RTCPUtilitiesLib/RTCPSRPacket.o
+    RTPMetaInfoLib/RTPMetaInfoPacket.o
+    RTSPClientLib/ClientSession.o
+    RTSPClientLib/ClientSocket.o
+    RTSPClientLib/RTSPClient.o
+    SafeStdLib/InternalStdLib.o
+    SafeStdLib/InternalStdLib.xo
+    StreamingLoadTool/StreamingLoadTool.o
+    StreamingProxy--Linux.tar.gz
+    qtpasswd.tproj/QTSSPasswd.o
+    qtpasswd.tproj/qtpasswd
+)
+
+function _FN_clean_dss()
+{
+more >&1<<EOF
+
+${Bseablue}${Fblack}==================================================${AC}
+${Bseablue}${Fblack}Clean: ...perl...${Fred}dss${Fblack}...                           ${AC}
+${Bseablue}${Fblack}==================================================${AC}
+
+EOF
+    if [ -e "${_JLLCFG_SRC_DSS}/DarwinStreamingSrvr-$(uname)/Uninstall" ]; then
+        echo -e "JLL: uninstall Darwing Streaming Server"
+        cd ${_JLLCFG_SRC_DSS}/DarwinStreamingSrvr-$(uname)
+        ./Uninstall
+        cd - >/dev/null
+    fi
+    [ x"$(ls | grep -Ei 'make_dss_at_.*\.log')" != x ] && rm -rf make_dss_at_*.log
+    if [ x"${_Dss_lstTarget}" != x ]; then
+        _Dss_lstTargetSZ=${#_Dss_lstTarget[@]}
+        for((_Dss_i=0; _Dss_i<_Dss_lstTargetSZ; _Dss_i++)) {
+            _Dss_entry=${_Dss_lstTarget[_Dss_i]}
+            [ x"${_Dss_entry}" != x ] && _Dss_entry="${_JLLCFG_SRC_DSS}/${_Dss_entry}" \
+                                      || _Dss_entry=""
+            if [ -e "${_Dss_entry}" ]; then
+                echo "JLL: Removing compiled rubbish @ ${_Dss_entry}"
+                rm -rf ${_Dss_entry}
+            fi
+        }
+    fi
+    echo
+    echo -e "JLL: ${Fred}dss${AC} was cleaned over."
+    echo
+}
+
+
 function _FN_build_dss()
 {
 more >&1<<EOF
@@ -765,36 +959,38 @@ ${Bseablue}${Fblack}==================================================${AC}
 
 EOF
     # Check if dss is installed or not
-    if [ ! -e "${_JLLCFG_BIN_DSS}" ]; then
+    #if [ ! -e "${_JLLCFG_BIN_DSS}" ]; then
+    if [ 1 -eq 1 ]; then
         if [ ! -e "${_JLLCFG_SRC_DSS}" ]; then
             echo -e "${Bred}${Fyellow}JLL-Exit:${AC} not found" \
                     "${Bred}${Fwhite}${_JLLCFG_SRC_DSS}${AC}"
             _FN_exit
         fi
         cd ${_JLLCFG_SRC_DSS}
-        [ x"$(ls | grep -Ei 'makefile ')" != x ] && make clean
-        [ x"$(ls | grep -Ei 'make_perl_at_.*\.log')" != x ] && rm -rf make_perl_at_*.log
-        ./Configure -des -Dprefix=${_JLLCFG_BIN_PERL} 2>&1 | tee make_perl_at_${_DT_}.log
-        if [ x"$(ls | grep -Ei '^makefile$')" != x ]; then
-            make 2>&1 | tee -a make_perl_at_${_DT_}.log
-            make install 2>&1 | tee -a make_perl_at_${_DT_}.log
-        else
-             echo -e "${Bred}${Fyellow}JLL-Exit:${AC} ${Fred}perl${AC} is configured failure"
-             cd - >/dev/null
-            _FN_exit 
-        fi 
+        [ x"$(ls | grep -Ei 'make_dss_at_.*\.log')" != x ] && rm -rf make_dss_at_*.log
+        if [ -e "$(pwd)/buildtarball" -a -x "$(pwd)/buildtarball" ]; then
+            ./buildtarball  2>&1 | tee make_dss_at_${_DT_}.log
+            if [ ! -e "$(pwd)/DarwinStreamingSrvr-$(uname)/Install" ]; then
+                echo -e "${Bred}${Fyellow}JLL-Exit:${AC} Not found " \
+                        "${Fred}$(pwd)/DarwinStreamingSrvr-$(uname)/Install${AC}"
+                echo -e "${Bred}${Fyellow}JLL-Exit:${AC} ${Fred}dss${AC} is compiled failure"
+                cd - >/dev/null
+                _FN_exit
+            fi
+            cd - >/dev/null
+            cd ${_JLLCFG_SRC_DSS}/DarwinStreamingSrvr-$(uname)
+            ./Install
+        fi
         cd - >/dev/null
         echo
-        if [ ! -e "${_JLLCFG_BIN_PERL}" ]; then
-            echo -e "${Bred}${Fyellow}JLL-Exit:${AC} ${Fred}perl${AC} compile or install failure"
+        if [ ! -e "${_JLLCFG_BIN_DSS}" ]; then
+            echo -e "${Bred}${Fyellow}JLL-Exit:${AC} ${Fred}dss${AC} is installed failure"
             _FN_exit
         else
-            echo -e "JLL: ${Fred}perl${AC} was installed to" \
-                    "${Bgreen}${Fblack}${_JLLCFG_BIN_PERL}${AC}"
+            echo -e "JLL: ${Fred}dss${AC} was installed successfully."
         fi
     else
-        echo -e "JLL: ${Fred}perl${AC} has already been installed to" \
-                "${Bgreen}${Fblack}${_JLLCFG_BIN_PERL}${AC}"
+        echo -e "JLL: ${Fred}dss${AC} has already been installed."
     fi
 }
 
@@ -802,12 +998,14 @@ EOF
 
 function _FN_build_pipeline()
 {
-    _FN_build_perl
+    #_FN_build_perl
+    _FN_build_dss
 }
 
 function _FN_clean_pipeline()
 {
-    _FN_clean_perl
+    #_FN_clean_perl
+    _FN_clean_dss
 }
 
 
