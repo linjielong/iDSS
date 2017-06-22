@@ -5,7 +5,7 @@
 #   Author:       root
 #   Email:        493164984@qq.com
 #   DateTime:     2017-06-21 00:09:54
-#   ModifiedTime: 2017-06-21 21:26:42
+#   ModifiedTime: 2017-06-22 08:47:37
 
 JLLPATH="$(which $0)"
 JLLPATH="$(dirname ${JLLPATH})"
@@ -698,7 +698,7 @@ EOF
                 [ x"${_Perl_entry}" != x ] && _Perl_entry="${_JLLCFG_SRC_PERL}/${_Perl_entry}" \
                                            || _Perl_entry=""
                 if [ -e "${_Perl_entry}" ]; then
-                    echo "JLL: Removing compiled rubbish @ ${_Perl_entry}"
+                    echo "JLL: Removing rubbish @ ${_Perl_entry}"
                     rm -rf ${_Perl_entry}
                 fi
             }
@@ -917,6 +917,10 @@ declare -a _Dss_lstTarget=(
     StreamingProxy--Linux.tar.gz
     qtpasswd.tproj/QTSSPasswd.o
     qtpasswd.tproj/qtpasswd
+    QTFileTools/QTFileInfo.tproj/QTFileInfo
+    QTFileTools/QTFileTest.tproj/QTFileTest
+    QTFileTools/QTSampleLister.tproj/QTSampleLister
+    QTFileTools/QTTrackInfo.tproj/QTTrackInfo
 )
 
 function _FN_clean_dss()
@@ -942,7 +946,7 @@ EOF
             [ x"${_Dss_entry}" != x ] && _Dss_entry="${_JLLCFG_SRC_DSS}/${_Dss_entry}" \
                                       || _Dss_entry=""
             if [ -e "${_Dss_entry}" ]; then
-                echo "JLL: Removing compiled rubbish @ ${_Dss_entry}"
+                echo "JLL: Removing rubbish @ ${_Dss_entry}"
                 rm -rf ${_Dss_entry}
             fi
         }
@@ -989,10 +993,13 @@ EOF
             _isCHK=$(grep -En "perldef=${_JLLCFG_BIN_PERL}" \
                      ${_JLLCFG_SRC_DSS}/DarwinStreamingSrvr-$(uname)/Install 2>/dev/null)
             if [ x"${_isCHK}" = x ]; then
+                _isCHK=$(grep -En "perldef=/usr/local/bin/perl" \
+                         ${_JLLCFG_SRC_DSS}/DarwinStreamingSrvr-$(uname)/Install 2>/dev/null)
+ 
                 _CNT=0
                 _Lines=${_isCHK%%:*}
                 for _Line in ${_Lines}; do
-                  _CNT=$(_CNT+1) 
+                    $((_CNT++))
                 done
                 if [ ${_CNT} -eq 1 ]; then
                     sed -e "${_Lines} a ${_JLLCFG_CONTENT_DSS}" -i \
@@ -1000,7 +1007,7 @@ EOF
                 else
                     echo -e \
                         "${Bred}${Fyellow}JLL-Exit:${AC}" \
-                        "${Fred}DarwinStreamingSrvr-$(uname)/Install${AC} is invalid"
+                        "${Fred}DarwinStreamingSrvr-$(uname)/Install${AC} is invalid - ${_CNT}"
                     _FN_clean_dss
                     _FN_exit
                 fi
