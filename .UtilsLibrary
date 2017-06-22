@@ -1,0 +1,678 @@
+#!/bin/bash
+# Copyright (c) 2016-2100.   jielong_lin.   All rights reserved.
+#
+__GvPATH="$(which $0)"
+__GvTags="$(basename ${__GvPATH})"
+__GvPATH="$(dirname ${__GvPATH})"
+__GvPATH=$(cd ${__GvPATH};pwd;cd - >/dev/null)
+if [ x"${__GvPATH}" = x -o ! -e "${__GvPATH}" ]; then
+    echo
+    echo "JLL@${__GvTags}|  Not Retrieve the absolute path for current executable path"
+    echo
+    Lfn_Exit
+fi
+
+__GvHOME=$(cd ~;pwd;cd - >/dev/null)
+if [ x"${__GvHOME}" = x -o ! -e "${__GvHOME}" ]; then
+    echo
+    echo "JLL@${__GvTags}|  Not Retrieve the absolute path for '~'"
+    echo
+    Lfn_Exit
+fi
+#echo "${__GvHOME}"
+
+
+function Lfn_Exit()
+{
+    [ x"${__GvTags}" != x ] && unset __GvTags
+    [ x"${__GvPATH}" != x ] && unset __GvPATH
+    [ x"${__GvHOME}" != x ] && unset __GvHOME
+    [ x"${__GvAccOff}" != x ] && unset __GvAccOff
+    [ x"${__GvFgBlack}" != x ] && unset __GvFgBlack
+    [ x"${__GvFgRed}" != x ] && unset __GvFgRed 
+    [ x"${__GvFgGreen}" != x ] && unset __GvFgGreen
+    [ x"${__GvFgYellow}" != x ] && unset __GvFgYellow
+    [ x"${__GvFgBlue}" != x ] && unset __GvFgBlue
+    [ x"${__GvFgPink}" != x ] && unset __GvFgPink
+    [ x"${__GvFgSeaBlue}" != x ] && unset __GvFgSeaBlue
+    [ x"${__GvFgWhite}" != x ] && unset __GvFgWhite
+    [ x"${__GvBgBlack}" != x ] && unset __GvBgBlack
+    [ x"${__GvBgRed}" != x ] && unset __GvBgRed
+    [ x"${__GvBgGreen}" != x ] && unset __GvBgGreen
+    [ x"${__GvBgYellow}" != x ] && unset __GvBgYellow
+    [ x"${__GvBgBlue}" != x ] && unset __GvBgBlue
+    [ x"${__GvBgPink}" != x ] && unset __GvBgPink
+    [ x"${__GvBgSeaBlue}" != x ] && unset __GvBgSeaBlue
+    [ x"${__GvBgWhite}" != x ] && unset __GvBgWhite
+    [ x"${__GvMenuUtilsContent}" != x ] && unset __GvMenuUtilsContent
+    [ x"${__GvPageMenuUtilsContent}" != x ] && unset __GvPageMenuUtilsContent
+    [ x"${__GvPageUnit}" != x ] && unset __GvPageUnit
+
+    exit 0 
+}
+
+
+# 黑:Black
+# 红:Red
+# 绿:Green
+# 黄:Yellow
+# 蓝:Blue
+# 粉红:Pink
+# 海蓝:SeaBlue
+# 白:White
+
+__GvAccOff="\033[0m"
+__GvFgBlack="\033[30m"
+__GvFgRed="\033[31m"
+__GvFgGreen="\033[32m"
+__GvFgYellow="\033[33m"
+__GvFgBlue="\033[34m"
+__GvFgPink="\033[35m"
+__GvFgSeaBlue="\033[36m"
+__GvFgWhite="\033[37m"
+__GvBgBlack="\033[40m"
+__GvBgRed="\033[41m"
+__GvBgGreen="\033[42m"
+__GvBgYellow="\033[43m"
+__GvBgBlue="\033[44m"
+__GvBgPink="\033[45m"
+__GvBgSeaBlue="\033[46m"
+__GvBgWhite="\033[47m"
+
+## Lfn_Cursor_EchoConfig [on|off] 
+function Lfn_Cursor_EchoConfig()
+{
+    if [ -z "$1" ]; then
+        Lfn_Exit 
+    fi
+    if [ x"$1" = x"off" ]; then
+        echo -e "${__GvAccOff}\033[?25l${__GvAccOff}"
+    fi
+    if [ x"$1" = x"on" ]; then
+        echo -e "${__GvAccOff}\033[?25h${__GvAccOff}"
+    fi
+}
+
+function Lfn_Cursor_Move()
+{
+    if [ -z "$1" -o -z "$2" ]; then
+        echo "Sorry,Exit due to the invalid usage" 
+        Lfn_Exit
+    fi
+
+    echo $1 | grep -E '[^0-9]' >/dev/null && __LvCmFlag="0" || __LvCmFlag="1";
+    if [ x"${__LvCmFlag}" = x"0" ]; then
+        echo "Sorry,Return because the parameter1 isn't digit"
+        [ x"${__LvCmFlag}" != x ] && unset __LvCmFlag 
+        return; 
+    fi
+
+    echo $2 | grep -E '[^0-9]' >/dev/null && __LvCmFlag="0" || __LvCmFlag="1";
+    if [ x"${__LvCmFlag}" = x"0" ]; then
+        echo "Sorry,Return because the parameter2 isn't digit" 
+        [ x"${__LvCmFlag}" != x ] && unset __LvCmFlag 
+        return; 
+    fi
+
+    #'\c' or '-n' - dont break line
+    __LvCmTargetLocation="${__GvAccOff}\033[$2;$1H${__GvAccOff}"
+    echo -ne "${__LvCmTargetLocation}"
+    [ x"${__LvCmFlag}" != x ] && unset __LvCmFlag 
+    [ x"${__LvCmTargetLocation}" != x ] && unset __LvCmTargetLocation
+}
+
+
+function Lfn_Stdin_Read()
+{
+    if [ -z "$1" ]; then
+        echo "Sorry, Exit due to the bad usage"
+        Lfn_Exit
+    fi
+
+    __LvSrData=""
+
+    # Read one byte from stdin
+    trap : 2   # enable to capture the signal from keyboard input ctrl_c
+    while read -s -n 1 __LvSrData
+    do
+        case "${__LvSrData}" in
+        "")
+            read -s -n 1 -t 1 __LvSrData
+            case "${__LvSrData}" in
+            "[")
+                read -s -n 1 -t 1 __LvSrData
+                case "${__LvSrData}" in
+                "A")
+                    __LvSrData="KeyUp"
+                ;;
+                "B")
+                    __LvSrData="KeyDown"
+                ;;
+                "C") 
+                    __LvSrData="KeyRight"
+                ;;
+                "D")
+                    __LvSrData="KeyLeft"
+                ;;
+                *)
+                    echo "Dont Recognize KeyCode: ${__LvSrData}"
+                    continue;
+                ;;
+                esac 
+            ;;
+            "")
+                __LvSrData="KeyEsc"
+            ;;
+            *)
+                echo "Dont Recognize KeyCode: ${__LvSrData}"
+                continue;
+            ;;
+            esac
+        ;;
+        "")
+            # Space Key and Enter Key arent recognized
+            __LvSrData="KeySpaceOrEnter"
+            break;
+        ;;
+        *)
+            break;
+        ;;
+        esac
+        [ x"${__LvSrData}" != x ] && break;
+    done
+    trap "" 2  # disable to capture the singal from keyboard input ctrl_c
+    eval $1="${__LvSrData}"
+    [ x"${__LvSrData}" != x ] && unset __LvSrData
+}
+
+## Lfn_Retrieve_LineNO_with_ascending_sort <oResult> <iKeyword> <iFile> 
+##
+##
+## For example:
+##   Lfn_Retrieve_LineNO_with_ascending_sort oResult "syntax on" "~/.vimrc"
+##   echo "Result=$oResult"
+##
+function Lfn_Retrieve_LineNO_with_ascending_sort()
+{
+    eval $1=""
+    if [ $# -ne 3 ]; then
+        echo
+        echo "JLL@${__GvTags}| Violate Function Prototype"
+        echo
+        Lfn_Exit
+    fi
+
+    __LstrKW=$(echo -e "$2" | sed "s#\/#\\\/#g")
+    __LstrKW=$(echo -e "${__LstrKW}" | sed "s:	:\\\\t:g")
+    __LstrKW=$(echo -e "${__LstrKW}" | sed "s:\[:\\\[:g")
+    __LstrKW=$(echo -e "${__LstrKW}" | sed "s:\]:\\\]:g")
+    __LstrKW=$(echo -e "${__LstrKW}" | sed "s:\*:\\\*:g")
+    __LstrKW=$(echo -e "${__LstrKW}" | sed "s:\.:\\\.:g")
+
+    __LstrFile=$3
+    if [ x"$(echo ${__LstrFile} | grep -E '^~')" != x ]; then
+        __LstrFile=$(echo ${__LstrFile} | sed -e "s/^~//g" -e "s#^/##g")
+        __LstrFile=${HOME}/${__LstrFile}
+    else
+        if [ x"$(echo ${__LstrFile} | grep -E '^/')" = x ]; then
+            __LstrFile=$(pwd)/${__LstrFile}
+        fi
+    fi
+    #echo "File=${__LstrFile}"
+    if [ ! -e "${__LstrFile}" ]; then
+        echo
+        echo "JLL@${__GvTags}| Not Exist File by 3rd parameter: \"${__LstrFile}\""
+        echo
+        [ x"${__LstrKW}" != x ] && unset __LstrKW
+        [ x"${__LstrFile}" != x ] && unset __LstrFile
+        return
+    fi
+
+    __LintLines=$(sed -n "/${__LstrKW}/=" ${__LstrFile})
+    #echo "JLL@Debug| Lines=${__LintLines} by ${__LstrKW}"
+    [ x"${__LstrKW}" != x ] && unset __LstrKW
+    [ x"${__LstrFile}" != x ] && unset __LstrFile
+    if [ x"${__LintLines}" != x ]; then
+        declare -a __LarrLineSet
+        declare -i i=0
+        for __LintLine in ${__LintLines}; do
+            __LarrLineSet[i++]="${__LintLine}"
+        done
+        [ x"${__LintLine}" != x ] && unset __LintLine
+        [ x"${__LintLines}" != x ] && unset __LintLines
+        if [ $i -gt 1 ]; then
+            for((j=0; j<i; j++)) {
+                for((k=j+1; k<i; k++)) {
+                    if [ ${__LarrLineSet[j]} -gt ${__LarrLineSet[k]} ]; then
+                        t=${__LarrLineSet[k]}
+                        __LarrLineSet[k]=${__LarrLineSet[j]}
+                        __LarrLineSet[j]=$t
+                    fi
+                    [ x"$t" != x ] && unset t
+                }
+                [ x"$k" != x ] && unset k
+            }
+            [ x"$j" != x ] && unset j
+        fi
+        __LintLines="${__LarrLineSet[0]}"
+        for((j=1; j<i; j++)) {
+            __LintLines="${__LintLines} ${__LarrLineSet[j]}"
+        }
+        [ x"$j" != x ] && unset j
+        __LintLines=$(echo -e "${__LintLines}" | sed "s:\ :\\\ :g")
+        #echo "JLL@Debug|  Lines=${__LintLines}"
+        eval $1="${__LintLines}"
+        [ x"${__LarrLineSet}" != x ] && unset __LarrLineSet
+        [ x"$i" != x ] && unset i 
+    fi
+    [ x"${__LintLines}" != x ] && unset __LintLines
+}
+
+
+##
+##    declare -a __GvMenuUtilsContent=(
+##        "userdebug: It will enable the most debugging features for tracing the platform."
+##        "user:      It is offically release, and it only disable debugging features."
+##    )
+##    Lfn_MenuUtils LvpcResult  "Select" 7 4 "***** PhilipsTV Product Type (q: quit) *****"
+##    if [ x"${LvpcResult}" = x"${__GvMenuUtilsContent[0]}" ]; then
+##        LvpcOptionBuild=userdebug
+##        echo "hit"
+##    fi
+##
+function Lfn_MenuUtils()
+{
+    if [ $# -gt 5 ]; then
+        Lfn_Exit
+    fi
+
+    # Check if parameter is digit and Converse it to a valid parameter
+    echo "$3" | grep -E '[^0-9]' >/dev/null && __LvVisuX="0" || __LvVisuX="$3";
+    if [ x"${__LvVisuX}" = x"0" ]; then
+        __LvVisuX=1
+    fi
+    echo "$4" | grep -E '[^0-9]' >/dev/null && __LvVisuY="0" || __LvVisuY="$4";
+    if [ x"${__LvVisuY}" = x"0" ]; then
+        __LvVisuY=1
+    fi
+
+    # Check if parameter is a valid
+    if [ x"$2" != x"Input" -a x"$2" != x"Select" ]; then
+        [ x"${__LvVisuX}" != x ] && unset __LvVisuX 
+        [ x"${__LvVisuY}" != x ] && unset __LvVisuY
+        Lfn_Exit
+    fi
+
+    #__LvVisuCount=$[${#__GvMenuUtilsContent[@]} / 2]
+    __LvVisuCount=$(( ${#__GvMenuUtilsContent[@]} / 1 ))
+    if [ x"$2" = x"Select" -a ${__LvVisuCount} -lt 1 ]; then
+        # Select Mode but none item to be selected
+        echo "Sorry, Cant Run Select Mode Because of None items to be selected."
+        [ x"${__LvVisuX}" != x ] && unset __LvVisuX 
+        [ x"${__LvVisuY}" != x ] && unset __LvVisuY
+        [ x"${__LvVisuCount}" != x ] && unset __LvVisuCount
+        return
+    fi
+
+    # Select for configuration guide
+    __LvVisuFocus=99999 #None Focus
+    __LvVisuNextFocus=0
+
+    while [ 1 ]; do
+        ##
+        ## Render UI
+        ##
+        if [ x"$2" = x"Select" ]; then # Input Mode
+            Lfn_Cursor_EchoConfig "off"
+        fi
+        clear
+        __LvRenderLine=${__LvVisuY}
+        if [ x"$5" != x ]; then # exist title
+            Lfn_Cursor_Move ${__LvVisuX} ${__LvRenderLine}
+            echo "$5"
+            __LvRenderLine=$(( __LvRenderLine + 1 ))
+        fi
+        if [ ${__LvVisuCount} -gt 0 ]; then
+            for (( __LvVisuIdx=0 ; __LvVisuIdx<__LvVisuCount ; __LvVisuIdx++ )) do
+                if [ x"$2" = x"Select" ]; then
+                    Lfn_Cursor_Move ${__LvVisuX} ${__LvRenderLine}
+                    if [ ${__LvVisuFocus} -eq ${__LvVisuIdx} ]; then
+                        if [ ${__LvVisuFocus} -ne ${__LvVisuNextFocus} ]; then
+                            # Cancel the focus item reversed style
+                            echo -ne "├── ${__GvMenuUtilsContent[__LvVisuIdx]}"
+                            __LvVisuFocus=99999 # lose the focus
+                        else
+                            # When Focus is the same to Next Focus, such as only exist one item
+                            # Echo By Reversing its color
+                            echo -ne "├── ${__GvAccOff}\033[07m${__GvMenuUtilsContent[__LvVisuIdx]}${__GvAccOff}"
+                            __LvVisuFocus=${__LvVisuNextFocus}
+                        fi
+                    else
+                        if [ ${__LvVisuNextFocus} -eq ${__LvVisuIdx} ]; then
+                            # Echo By Reversing its color
+                            echo -ne "├── ${__GvAccOff}\033[07m${__GvMenuUtilsContent[__LvVisuIdx]}${__GvAccOff}"
+                            __LvVisuFocus=${__LvVisuNextFocus}
+                        else
+                            echo -ne "├── ${__GvMenuUtilsContent[__LvVisuIdx]}"
+                        fi
+                    fi
+                    __LvRenderLine=$(( __LvRenderLine + 1 ))
+                fi
+                if [ x"$2" = x"Input" ]; then
+                    Lfn_Cursor_Move ${__LvVisuX} ${__LvRenderLine}
+                    echo -ne "├── ${__GvMenuUtilsContent[__LvVisuIdx]}"
+                    __LvRenderLine=$(( __LvRenderLine + 1 ))
+                fi
+            done
+            [ x"${__LvVisuIdx}" != x ] && unset __LvVisuIdx 
+
+            ##
+            ## Drive UI
+            ##
+
+            if [ x"$2" = x"Select" ]; then
+                Lfn_Cursor_Move ${__LvVisuX} "$(( __LvRenderLine + 4 ))"
+                # echo "Focus:${__LvVisuFocus} NextFocus:${__LvVisuNextFocus} Count:${__LvVisuCount}"
+                echo "Focus:${__LvVisuFocus} Count:${__LvVisuCount}"
+                Lfn_Stdin_Read __LvCustuiData
+                case "${__LvCustuiData}" in
+                "KeyUp"|"k")
+                    if [ ${__LvVisuNextFocus} -eq 0 ]; then
+                        __LvVisuNextFocus=${__LvVisuCount}
+                    fi
+                    __LvVisuNextFocus=$(expr ${__LvVisuNextFocus} - 1)
+                ;;
+                "KeyDown"|"j")
+                    __LvVisuNextFocus=$(expr ${__LvVisuNextFocus} + 1)
+                    if [ ${__LvVisuNextFocus} -eq ${__LvVisuCount} ]; then
+                        __LvVisuNextFocus=0
+                    fi
+                    ;;
+                "KeySpaceOrEnter")
+                    echo ""
+                    __LvVisuFocus=${__LvVisuNextFocus}
+                    Lfn_Cursor_EchoConfig "on"
+                    break
+                    ;;
+                "q")
+                    __LvVisuFocus=99999
+                    echo ""
+                    echo "Exit: Quit due to your choice: q"
+                    echo ""
+                    Lfn_Cursor_EchoConfig "on"
+                    [ x"${__LvVisuFocus}" != x ] && unset __LvVisuFocus
+                    [ x"${__LvCustuiData}" != x ] && unset __LvCustuiData
+                    [ x"${__LvVisuNextFocus}" != x ] && unset __LvVisuNextFocus
+                    [ x"${__LvRenderLine}" != x ] && unset __LvRenderLine
+                    [ x"${__LvVisuX}" != x ] && unset __LvVisuX 
+                    [ x"${__LvVisuY}" != x ] && unset __LvVisuY
+                    [ x"${__LvVisuCount}" != x ] && unset __LvVisuCount
+                    Lfn_Exit
+                    ;;
+                *)
+                    ;;
+                esac
+                Lfn_Cursor_EchoConfig "on"
+            fi
+            if [ x"$2" = x"Input" ]; then
+                Lfn_Cursor_Move ${__LvVisuX} "$(( __LvRenderLine + 1 ))"
+                echo "[Please Input A String (Dont repeat name with the above)]"
+                Lfn_Cursor_Move ${__LvVisuX} "$(( __LvRenderLine + 2 ))"
+                read __LvVisuData
+                if [ -z "${__LvVisuData}" ]; then
+                    echo ""
+                    continue
+                fi
+                if [ x"${__LvVisuData}" = x"q" ]; then
+                    echo ""
+                    echo "Exit: due to your choice: q"
+                    echo ""
+                    Lfn_Exit
+                fi
+                __LvVisuIsLoop=0
+                if [ ${__LvVisuCount} -gt 0 ]; then
+                    for (( __LvVisuIdx=0 ; __LvVisuIdx<__LvVisuCount ; __LvVisuIdx++ )) do
+                        if [ x"${__GvMenuUtilsContent[__LvVisuIdx]}" = x"${__LvVisuData}" ]; then
+                            __LvVisuIsLoop=1
+                            echo "Sorry, Dont repeat to name the above Items:\"${__LvVisuData}\""
+                            echo ""
+                            break
+                        fi
+                    done
+                fi
+                if [ x"${__LvVisuIsLoop}" = x"0" -a x"${__LvVisuData}" != x ]; then
+                    eval $1=$(echo -e "${__LvVisuData}" | sed "s:\ :\\\\ :g")
+                    unset __LvVisuData
+                    unset __LvVisuIdx
+                    unset __LvVisuIsLoop
+                    break
+                fi
+            fi
+        else
+            if [ x"$2" = x"Select" ]; then
+                eval $1=""
+                return
+            fi
+            if [ x"$2" = x"Input" ]; then
+                Lfn_Cursor_Move ${__LvVisuX} "$(( __LvRenderLine + 1 ))"
+                echo "[Please Input A String (Dont repeat name with the above)]"
+                Lfn_Cursor_Move ${__LvVisuX} "$(( __LvRenderLine + 2 ))"
+                read __LvVisuData
+                echo ""
+                if [ x"${__LvVisuData}" != x ]; then
+                    eval $1="${__LvVisuData}"
+                    break
+                fi
+                if [ x"${__LvVisuData}" = x"q" ]; then
+                    echo "Exit: due to your choice: q"
+                    echo
+                    break
+                fi
+            fi
+        fi
+    done
+
+    if [ x"$2" = x"Select" ]; then
+        if [ ${__LvVisuFocus} -ge 0 -a ${__LvVisuFocus} -lt ${__LvVisuCount} ]; then
+            echo ""
+            eval $1=$(echo -e "${__GvMenuUtilsContent[__LvVisuFocus]}" | sed "s:\ :\\\\ :g")
+        fi
+    fi
+
+    [ x"${__LvVisuFocus}" != x ] && unset __LvVisuFocus
+    [ x"${__LvCustuiData}" != x ] && unset __LvCustuiData
+    [ x"${__LvVisuNextFocus}" != x ] && unset __LvVisuNextFocus
+    [ x"${__LvRenderLine}" != x ] && unset __LvRenderLine
+    [ x"${__LvVisuX}" != x ] && unset __LvVisuX 
+    [ x"${__LvVisuY}" != x ] && unset __LvVisuY
+    [ x"${__LvVisuCount}" != x ] && unset __LvVisuCount
+}
+
+
+##
+##  declare -i __GvPageUnit=3
+##  declare -a __GvPageMenuUtilsContent=(
+##        "userdebug: It will enable the most debugging features for tracing the platform."
+##        "user1:      It is offically release, and it only disable debugging features."
+##        "user2:      It is offically release, and it only disable debugging features."
+##        "user3:      It is offically release, and it only disable debugging features."
+##        "user4:      It is offically release, and it only disable debugging features."
+##        "user5:      It is offically release, and it only disable debugging features."
+##  )
+##  Lfn_PageMenuUtils LvpcResult  "Select" 7 4 "***** PhilipsTV Product Type (q: quit) *****"
+##  if [ x"${LvpcResult}" = x"${__GvPageMenuUtilsContent[0]}" ]; then
+##      LvpcOptionBuild=userdebug
+##      echo "hit"
+##  fi
+##
+function Lfn_PageMenuUtils()
+{
+    if [ $# -gt 5 ]; then
+        Lfn_Exit
+    fi
+    if [ x"${__GvPageUnit}" = x ]; then
+        echo
+        echo "JLL@${__GvTags}|  Can not Use Lfn_PageMenuUtils due to Not Define __GvPageUnit"
+        echo
+        Lfn_Exit
+    fi
+    if [ ${__GvPageUnit} -lt 1 ]; then
+        echo
+        echo "JLL@${__GvTags}|  Can not Use Lfn_PageMenuUtils due to the invalid __GvPageUnit"
+        echo
+        Lfn_Exit
+    fi
+    if [ x"${__GvPageMenuUtilsContent}" = x ]; then
+        echo
+        echo "JLL@${__GvTags}|  Can not Use Lfn_PageMenuUtils due to the invalid __GvPageMenuUtilsContent"
+        echo
+        Lfn_Exit
+    fi
+ 
+
+    # Check if parameter is digit and Converse it to a valid parameter
+    echo "$3" | grep -E '[^0-9]' >/dev/null && __LvPmuX="0" || __LvPmuX="$3";
+    if [ x"${__LvPmuX}" = x"0" ]; then
+        __LvPmuX=1
+    fi
+    echo "$4" | grep -E '[^0-9]' >/dev/null && __LvPmuY="0" || __LvPmuY="$4";
+    if [ x"${__LvPmuY}" = x"0" ]; then
+        __LvPmuY=1
+    fi
+
+    # Check if parameter is a valid
+    if [ x"$2" != x"Input" -a x"$2" != x"Select" ]; then
+        [ x"${__LvPmuX}" != x ] && unset __LvPmuX
+        [ x"${__LvPmuY}" != x ] && unset __LvPmuY
+        Lfn_Exit
+    fi
+
+    __LvPageMenuUtilsContentCount=${#__GvPageMenuUtilsContent[@]}
+    __LvPageIdx=0
+    __LvPageCount=$((__LvPageMenuUtilsContentCount/__GvPageUnit)) 
+    while [ ${__LvPageMenuUtilsContentCount} -gt 0 ]; do
+        # Loading the specified page to display
+        declare -a __GvMenuUtilsContent
+        for(( __LvIdx=$((__GvPageUnit*__LvPageIdx)); __LvIdx < __LvPageMenuUtilsContentCount; __LvIdx++ )) {
+            if [ ${__LvIdx} -lt $((__GvPageUnit*__LvPageIdx+__GvPageUnit)) ]; then
+                __GvMenuUtilsContent[__LvIdx-$((__GvPageUnit*__LvPageIdx))]="${__GvPageMenuUtilsContent[${__LvIdx}]}"
+            else
+                break
+            fi
+        }
+        if [ ${__LvIdx} -ne ${__LvPageMenuUtilsContentCount} ]; then
+            __GvMenuUtilsContent[__LvIdx-$((__GvPageUnit*__LvPageIdx))]="NextPage.$((__LvPageIdx+1))"
+        fi
+        Lfn_MenuUtils __LvResult  "$2" $3 $4 "$5"
+        unset __GvMenuUtilsContent
+        if [ x"${__LvResult}" = x"NextPage.$((__LvPageIdx+1))" ]; then
+            __LvPageIdx=$((__LvPageIdx+1))
+            continue
+        fi
+        break
+    done
+    eval $1=$(echo -e "${__LvResult}" | sed "s:\ :\\\\ :g")
+    [ x"${__LvPmuX}" != x ] && unset __LvPmuX
+    [ x"${__LvPmuY}" != x ] && unset __LvPmuY
+    [ x"${__LvPageMenuUtilsContentCount}" != x ] && unset __LvPageMenuUtilsContentCount
+    [ x"${__LvPageIdx}" != x ] && unset __LvPageIdx
+    [ x"${__LvPageCount}" != x ] && unset __LvPageCount
+    [ x"${__LvResult}" != x ] && unset __LvResult
+}
+
+
+## Lfn_Stdin_GetDigit <oResult> [<prompt>]
+##
+## Lfn_Stdin_GetDigit  oResult  "hello world: "
+## echo "Result: $oResult"
+function Lfn_Stdin_GetDigit()
+{
+    if [ ! -z "$2" ]; then 
+        __LvSgdCmd='read -p "$2 " __LvSgdNum'
+    else 
+        __LvSgdCmd='read __LvSgdNum'
+    fi   
+
+    __LvSgdNum=""
+    while [ -z "${__LvSgdNum}" ]; do
+        eval ${__LvSgdCmd}   
+        echo ${__LvSgdNum} | grep -E '[^0-9]' >/dev/null && __LvSgdNum="" || break; 
+    done 
+
+    eval $1="${__LvSgdNum}"
+    [ x"${__LvSgdCmd}" != x ] && unset __LvSgdCmd
+    [ x"${__LvSgdNum}" != x ] && unset __LvSgdNum
+}
+
+
+## Lfn_Sys_PathConvertToAbsolutePath <oAbsolutePath> <iPathFile|iPath>
+##
+function Lfn_Sys_PathConvertToAbsolutePath()
+{
+    if [ $# -ne 2 ]; then
+        echo
+        echo "JLL@${__GvTags}|  not obey function prototype"
+        echo
+        Lfn_Exit
+    fi
+
+    __LvSpctapTarget=$2
+
+    # Check if the parameter <iPathFile>|<iPath> is valid, 
+    # including convert "~/" to the absolute path
+    __LvSpctapFlag=$(echo ${__LvSpctapTarget} | grep -E "^~")
+    if [ ! -z "${__LvSpctapFlag}" ]; then
+        __LvSpctapTarget=$(echo ${__LvSpctapTarget} | sed "s/^~//g")
+        __LvSpctapTarget=$(echo ${__LvSpctapTarget} | sed "s#^/##g")
+        __LvSpctapTarget="${HOME}/${__LvSpctapTarget}"
+    fi
+    # Check if the config file path start with "/"
+    __LvSpctapFlag=$(echo "${__LvSpctapTarget}" | grep -E "^/")
+    if [ -z "${__LvSpctapFlag}" ]; then
+        __LvSpctapTarget="$(pwd)/${__LvSpctapTarget}"
+    fi
+
+    if [ x"${__LvSpctapTarget}" != x"/" ]; then
+        __LvSpctapTarget="${__LvSpctapTarget%%/}"
+    fi
+    eval $1="${__LvSpctapTarget}"
+    [ x"${__LvSpctapTarget}" != x ] && unset __LvSpctapTarget
+    [ x"${__LvSpctapFlag}" != x ] && unset __LvSpctapFlag
+}
+
+
+## Fn_Remove_EmptyFolders <iPath>
+function Fn_Remove_EmptyFolders()
+{
+    if [ x"$1" = x ]; then
+        echo
+        echo "JLL@${__GvTags}|  Not comply with Function Prototype"
+        echo
+        Lfn_Exit
+    fi
+
+    echo "JLL@${__GvTags}|  Cleanup all related empty folders"
+    Lfn_Sys_PathConvertToAbsolutePath __LstrAbsolutePath "$1"
+    if [ x"${__LstrAbsolutePath}" = x ]; then
+        echo
+        echo "JLL@${__GvTags}|  Failure because \"$1\" is converted to NULL"
+        echo
+        Lfn_Exit
+    fi
+    if [ -e "${__LstrAbsolutePath}" ]; then
+        ___LstrTargets=$(find ${__LstrAbsolutePath} -type d -empty)
+        for __LstrTarget in ${___LstrTargets}; do
+            # Should first check if the empty folder has been already removed
+            [ -e "${__LstrTarget}" ] && rm -rvf ${__LstrTarget}
+        done
+        [ x"${__LstrTarget}" != x ] && unset __LstrTarget
+        [ x"${___LstrTargets}" != x ] && unset ___LstrTargets
+    fi
+    if [ -e "${__LstrAbsolutePath}" ]; then
+        if [ x"$(ls ${__LstrAbsolutePath} 2>/dev/null)" = x ]; then
+            rm -rvf ${__LstrAbsolutePath}
+        fi
+    fi
+    [ x"${__LstrAbsolutePath}" != x ] && unset __LstrAbsolutePath
+}
+

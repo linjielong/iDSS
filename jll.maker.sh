@@ -5,7 +5,7 @@
 #   Author:       jielong.lin 
 #   Email:        493164984@qq.com
 #   DateTime:     2017-06-21 00:09:54
-#   ModifiedTime: 2017-06-22 12:06:29
+#   ModifiedTime: 2017-06-22 15:39:20
 
 JLLPATH="$(which $0)"
 JLLPATH="$(dirname ${JLLPATH})"
@@ -934,6 +934,10 @@ function _FN_clean_pipeline()
 {
     _FN_clean_dss
     _FN_clean_perl
+
+    [ -e "${_JLLCFG_BIN_SAS%/*}/.UtilsLibrary" ] && rm -rvf ${_JLLCFG_BIN_SAS%/*}/.UtilsLibrary
+    [ -e "${_JLLCFG_BIN_SAS%/*}/jll.iDSS_executor.sh" ] \
+    && rm -rvf ${_JLLCFG_BIN_SAS%/*}/jll.iDSS_executor.sh
 }
 
 
@@ -1046,9 +1050,9 @@ EOF
                     sed -e "${_Lines} a ${_JLLCFG_CONTENT_DSS}" -i \
                         ${_JLLCFG_SRC_DSS}/DarwinStreamingSrvr-$(uname)/Install
                     echo -e \
-                        "JLL: ${Fred}${_JLLCFG_SRC_DSS}/DarwinStreamingSrvr-$(uname)/Install${AC}"
+                    "JLL: ${Fgreen}${_JLLCFG_SRC_DSS}/DarwinStreamingSrvr-$(uname)/Install${AC}"
                     echo -e \
-                        "     is inserted the ${Fred}customized perl${AC} successfully @${_Lines}."
+                    "     is inserted the ${Fgreen}customized perl${AC} successfully @${_Lines}."
                 else
                     echo -e \
                         "${Bred}${Fyellow}JLL-Exit:${AC}" \
@@ -1079,16 +1083,22 @@ EOF
 
 function _FN_build_pipeline()
 {
-#    _FN_build_perl
-#    _FN_build_dss
-#    _FN_exit
-cat >$(pwd)/iDSS_executor<<EOF
+    _FN_build_perl
+    _FN_build_dss
+
+cat >$(pwd)/jll.iDSS_executor.sh<<EOF
 #!/bin/bash
 #
 # Copyright(c) 2017-2100.   jielong.lin    All rights reserved.
 #
-# Created by jielong.lin [jielong.lin@qq.com/493164984@qq.com] @ 2017-06-22
+# Created by jielong.lin [jielong.lin@qq.com/493164984@qq.com] @ $(date +%Y-%m-%d\ %H:%M:%S)
 #
+
+if [ x"\$(uname)" != x"Linux" ]; then
+    echo -e "\${Fred}JLL-Exit::\${AC} \${Fgreen}Platform Type \$(uname) isnot Linux\${AC}"
+    exit 0
+fi
+
 
 # adapt to more/echo/less and so on
   ESC=
@@ -1139,6 +1149,14 @@ else
 fi
 JLLPATH="\${__CvScriptPath}"
 
+if [ ! -e "\${JLLPATH}/.UtilsLibrary" ]; then
+    echo -e "\${Fred}JLL-Exit::\${AC} not found \${Fgreen}\${JLLPATH}/.UtilsLibrary\${AC}"
+    exit 0
+fi
+source \${JLLPATH}/.UtilsLibrary
+
+
+
 if [ ! -e "${_JLLCFG_BIN_DSS}" ]; then
     echo -e "\${Fred}JLL-Exit::\${AC} not found \${Fgreen}${_JLLCFG_BIN_DSS}\${AC}"
     exit 0
@@ -1148,41 +1166,139 @@ if [ ! -e "${_JLLCFG_BIN_SAS}" ]; then
     exit 0
 fi
 
-if [ x"\$1" = x"start" ]; then
-    isCHK_1=\$(ps ax | awk '{print \$1" " \$5}' | awk '/DarwinStreamingServer/ {print \$1}')
-    isCHK_2=\$(ps ax | awk '/streamingadminserver.pl/ {print \$1}')
-    if [ x"\${isCHK_1}" != x ]; then
-        ${_JLLCFG_BIN_DSS}
-    else
-        echo -e "\${Fseablue}JLL::\${AC} \${Fgreen}DarwinStreamingServer is running\${AC}"
-    fi
+isCHK_1=\$(ps axu | awk "{\\\$3=\\\$4=\\\$5=\\\$6=\\\$7=\\\$8=\\\$9=\\\$10=\"\"; print}" \\
+           | grep -Ei "[D]arwinStreamingServer$")
+isCHK_1="\${isCHK_1//         / }"
+isCHK_2=\$(ps axu | awk "{\\\$3=\\\$4=\\\$5=\\\$6=\\\$7=\\\$8=\\\$9=\\\$10=\"\"; print}" \\
+           | grep -Ei "[s]treamingadminserver\\.pl$")
+isCHK_2="\${isCHK_2//         / }"
 
-    if [ x"\${isCHK_2}" != x ]; then
-        ${_JLLCFG_BIN_SAS}
-    else
-        echo -e "\${Fseablue}JLL::\${AC} \${Fgreen}streamingadminserver.pl is running\${AC}"
-    fi
+
+declare -i __GvPageUnit=10
+declare -a __GvPageMenuUtilsContent
+declare -i PMi=0
+
+if [ x"\${isCHK_1}" != x -a y"\${isCHK_2}" != y ]; then
+  __GvPageMenuUtilsContent[PMi++]="Dump: show all runtime status of DarwinStreamingServer"
+  __GvPageMenuUtilsContent[PMi++]="Stop: stop DarwinStreamingServer and streamingadminserver.pl"
+else
+  __GvPageMenuUtilsContent[PMi++]="Start: start DarwinStreamingServer and streamingadminserver.pl"
 fi
 
-if [ x"\$1" = x"stop" ]; then
-    if [ x"\$(uname)" = x"Linux" ]; then
-        ps ax | awk '{print \$1" " \$5}' | awk '/DarwinStreamingServer/ {print \$1}' \
-              | xargs -r kill -9 2>/dev/null
-        ps ax | awk '/streamingadminserver.pl/ {print \$1}' | xargs -r kill -9 2>/dev/null
-    else
-        echo -e "\${Fred}JLL-Exit::\${AC} \${Fgreen}Platform Type \$(uname) isnot Linux\${AC}"
-        exit 0
+echo
+if [ \${PMi} -gt 0 ]; then
+    Lfn_PageMenuUtils _MenuID  "Select" 7 4 \\
+                               "***** Menu For Darwin Streaming Server  (q: quit) *****"
+    if [ x"\${_MenuID%%:*}" = x"Dump" ]; then
+        echo
+        echo "=================================================================================="
+        echo "   Darwin Streaming Server Alive Processes "
+        echo "=================================================================================="
+        echo "\${isCHK_1}"
+        echo "\${isCHK_2}"
+        echo
+        echo "=================================================================================="
+        echo "   Darwin Streaming Server Alive Ports "
+        echo "=================================================================================="
+        netstat -ntulp | grep -i Darwin
+        echo
+        echo
     fi
+
+    if [ x"\${_MenuID%%:*}" = x"Start" ]; then
+        if [ x"\${isCHK_1}" = x ]; then
+            ${_JLLCFG_BIN_DSS}
+            isCHK_1=\$(ps axu \\
+                       | awk "{\\\$3=\\\$4=\\\$5=\\\$6=\\\$7=\\\$8=\\\$9=\\\$10=\"\"; print}" \\
+                       | grep -Ei "[D]arwinStreamingServer$")
+            isCHK_1="\${isCHK_1//         / }"
+            if [ x"\${isCHK_1}" != x ]; then
+                echo -e "JLL:: \${Fgreen}DarwinStreamingServer is started successfully\${AC}"
+                echo "\${isCHK_1}"
+            else
+                echo -e "JLL:: \${Fred}Failed to start DarwinStreamingServer\${AC}"
+            fi
+        else
+            echo -e "\${Fseablue}JLL::\${AC} \${Fgreen}DarwinStreamingServer is running\${AC}"
+            echo "\${isCHK_1}"
+        fi
+        echo
+        if [ x"\${isCHK_2}" = x ]; then
+            ${_JLLCFG_BIN_SAS}
+            isCHK_2=\$(ps axu \\
+                       | awk "{\\\$3=\\\$4=\\\$5=\\\$6=\\\$7=\\\$8=\\\$9=\\\$10=\"\"; print}" \\
+                       | grep -Ei "[s]treamingadminserver\\.pl$")
+            isCHK_2="\${isCHK_2//         / }"
+            if [ x"\${isCHK_2}" != x ]; then
+                echo -e "JLL:: \${Fgreen}streamingadminserver.pl is started successfully\${AC}"
+                echo "\${isCHK_2}"
+            else
+                echo -e "JLL:: \${Fred}Failed to start streamingadminserver.pl\${AC}"
+            fi
+        else
+            echo -e "\${Fseablue}JLL::\${AC} \${Fgreen}streamingadminserver.pl is running\${AC}"
+            echo "\${isCHK_2}"
+        fi
+    fi
+
+    if [ x"\${_MenuID%%:*}" = x"Stop" ]; then
+        if [ x"\${isCHK_1}" != x ]; then
+            echo "\${isCHK_1}"
+            echo "\${isCHK_1}" | awk '{print \$2}' | xargs -r kill -9 2>/dev/null
+            isCHK_1=\$(ps axu \\
+                       | awk "{\\\$3=\\\$4=\\\$5=\\\$6=\\\$7=\\\$8=\\\$9=\\\$10=\"\"; print}" \\
+                       | grep -Ei "[D]arwinStreamingServer$")
+            isCHK_1="\${isCHK_1//         / }"
+            if [ x"\${isCHK_1}" != x ]; then
+                echo -e "JLL:: \${Fred}Failed to stop DarwinStreamingServer\${AC}"
+            else
+                echo -e "JLL:: \${Fgreen}DarwinStreamingServer is stopped successfully\${AC}"
+            fi
+        else
+            echo -e "\${Fseablue}JLL::\${AC} \${Fgreen}DarwinStreamingServer is stopped\${AC}"
+        fi
+        echo
+        if [ x"\${isCHK_2}" != x ]; then
+            echo "\${isCHK_2}"
+            echo "\${isCHK_2}" | awk '{print \$2}' | xargs -r kill -9 2>/dev/null
+            isCHK_2=\$(ps axu \\
+                       | awk "{\\\$3=\\\$4=\\\$5=\\\$6=\\\$7=\\\$8=\\\$9=\\\$10=\"\"; print}" \\
+                       | grep -Ei "[s]treamingadminserver\\.pl$")
+            isCHK_2="\${isCHK_2//         / }"
+            if [ x"\${isCHK_2}" != x ]; then
+                echo -e "JLL:: \${Fred}Failed to stop streamingadminserver.pl\${AC}"
+            else
+                echo -e "JLL:: \${Fgreen}streamingadminserver.pl is stopped successfully\${AC}"
+                echo "\${isCHK_2}"
+            fi
+        else
+            echo -e "\${Fseablue}JLL::\${AC} \${Fgreen}streamingadminserver.pl is stopped\${AC}"
+        fi
+    fi
+else
+    echo -e "\${Fred}JLL-Exit::\${AC} \${Bred}\${Fwhite}Unknown Error\${AC}"
 fi
 
-
+[ x"\${_MenuID}" != x ] && unset _MenuID
+[ x"\${__GvPageMenuUtilsContent}" != x ] && unset __GvPageMenuUtilsContent
+[ x"\${__GvPageUnit}" != x ] && unset __GvPageUnit
+[ x"\${PMi}" != x ] && unset PMi
+echo
 
 EOF
-    chmod +x $(pwd)/iDSS_executor
-
+    chmod +x $(pwd)/jll.iDSS_executor.sh
+    cp -rf $(pwd)/.UtilsLibrary ${_JLLCFG_BIN_SAS%/*}/  
+    mv -f $(pwd)/jll.iDSS_executor.sh ${_JLLCFG_BIN_SAS%/*}/  
+    _FN_exit
 }
 
 
+
+
+if [ ! -e "$(pwd)/.UtilsLibrary" ]; then
+    echo -e "${Fred}JLL-Exit::${AC} not found ${Fgreen}$(pwd)/.UtilsLibrary${AC}"
+    _FN_exit 
+fi
 
 echo
 Lfn_PageMenuUtils _MenuID  "Select" 7 4 \
