@@ -1,15 +1,30 @@
 #!/bin/bash
-# Copyright(c) 2016-2100.  root.  All rights reserved.
+# Copyright(c) 2016-2100.  jielong.lin  All rights reserved.
 #
 #   FileName:     jll.maker.sh
-#   Author:       root
+#   Author:       jielong.lin 
 #   Email:        493164984@qq.com
 #   DateTime:     2017-06-21 00:09:54
-#   ModifiedTime: 2017-06-22 08:47:37
+#   ModifiedTime: 2017-06-22 12:06:29
 
 JLLPATH="$(which $0)"
 JLLPATH="$(dirname ${JLLPATH})"
 source ${JLLPATH}/.BashShellLibrary
+
+
+_DT_=$(date +%Y_%m_%d__%H_%M_%S)
+
+_JLLCFG_PERL="perl-5.8.9"
+_JLLCFG_SRC_PERL="$(pwd)/${_JLLCFG_PERL}"
+_JLLCFG_BIN_PERL="/usr/local/DarwinStreamingServer/${_JLLCFG_PERL}/bin/perl"
+
+_JLLCFG_SRC_DSS="$(pwd)/dss"
+_JLLCFG_BIN_DSS="/usr/local/sbin/DarwinStreamingServer"
+_JLLCFG_BIN_SAS="/usr/local/sbin/streamingadminserver.pl"
+_JLLCFG_CONTENT_DSS="elif [ -x ${_JLLCFG_BIN_PERL} ]; then \
+\n    perldef=${_JLLCFG_BIN_PERL}\
+"
+
 
 declare -i GvPageUnit=10
 declare -a GvPageMenuUtilsContent=(
@@ -17,25 +32,7 @@ declare -a GvPageMenuUtilsContent=(
   "clean_pipeline: ...dss...perl..."
 )
 
-function _FN_exit()
-{
-    [ x"${GvPageUnit}" != x ] && unset GvPageUnit
-    [ x"${GvPageMenuUtilsContent}" != x ] && unset GvPageMenuUtilsContent
-    echo
-    exit 0
-}
 
-
-
-
-_DT_=$(date +%Y_%m_%d__%H_%M_%S)
-
-
-
-
-
-_JLLCFG_SRC_PERL="$(pwd)/perl-5.8.9"
-_JLLCFG_BIN_PERL="/usr/local/DarwinStreamingServer/perl-5.8.9/bin/perl"
 declare -a _Perl_lstTarget=(
     DynaLoader.o
     Makefile
@@ -672,94 +669,6 @@ declare -a _Perl_lstTarget=(
     xsutils.o
 )
 
-function _FN_clean_perl()
-{
-more >&1<<EOF
-
-${Bseablue}${Fblack}==================================================${AC}
-${Bseablue}${Fblack}Clean: ...${Fred}perl${Fblack}...dss...                           ${AC}
-${Bseablue}${Fblack}==================================================${AC}
-
-EOF
-    _BIN_PERL="${_JLLCFG_BIN_PERL%%/perl-5.8.9*}/perl-5.8.9"
-    if [ x"${_BIN_PERL}" != x -a -e "${_BIN_PERL}" ]; then
-        echo "JLL: Removing Bin Path @ ${_BIN_PERL}"
-        rm -rf ${_BIN_PERL}
-    fi
-
-    if [ -e "${_JLLCFG_SRC_PERL}" ]; then
-        cd ${_JLLCFG_SRC_PERL}
-        [ x"$(ls | grep -Ei 'makefile ')" != x ] && make clean
-        [ x"$(ls | grep -Ei 'make_perl_at_.*\.log')" != x ] && rm -rf make_perl_at_*.log
-        if [ x"${_Perl_lstTarget}" != x ]; then
-            _Perl_lstTargetSZ=${#_Perl_lstTarget[@]}
-            for((_Perl_i=0; _Perl_i<_Perl_lstTargetSZ; _Perl_i++)) {
-                _Perl_entry=${_Perl_lstTarget[_Perl_i]}
-                [ x"${_Perl_entry}" != x ] && _Perl_entry="${_JLLCFG_SRC_PERL}/${_Perl_entry}" \
-                                           || _Perl_entry=""
-                if [ -e "${_Perl_entry}" ]; then
-                    echo "JLL: Removing rubbish @ ${_Perl_entry}"
-                    rm -rf ${_Perl_entry}
-                fi
-            }
-        fi
-    fi
-    echo
-    echo -e "JLL: ${Fred}perl${AC} was cleaned over."
-    echo
-}
-
-
-function _FN_build_perl()
-{
-more >&1<<EOF
-
-${Bseablue}${Fblack}==================================================${AC}
-${Bseablue}${Fblack}Build: ...${Fred}perl${Fblack}...dss...                           ${AC}
-${Bseablue}${Fblack}==================================================${AC}
-
-EOF
-    # Check if perl is installed or not
-    if [ ! -e "${_JLLCFG_BIN_PERL}" ]; then
-        if [ ! -e "${_JLLCFG_SRC_PERL}" ]; then
-            echo -e "${Bred}${Fyellow}JLL-Exit:${AC} not found" \
-                    "${Bred}${Fwhite}${_JLLCFG_SRC_PERL}${AC}"
-            _FN_exit 
-        fi
-        cd ${_JLLCFG_SRC_PERL}
-        [ x"$(ls | grep -Ei '^makefile$')" != x ] && make clean
-        [ x"$(ls | grep -Ei 'make_perl_at_.*\.log')" != x ] && rm -rf make_perl_at_*.log
-        ./Configure -des -Dprefix=${_JLLCFG_BIN_PERL} 2>&1 | tee make_perl_at_${_DT_}.log
-        if [ x"$(ls | grep -Ei '^makefile$')" != x ]; then
-            make 2>&1 | tee -a make_perl_at_${_DT_}.log
-            make install 2>&1 | tee -a make_perl_at_${_DT_}.log
-        else
-            echo -e "${Bred}${Fyellow}JLL-Exit:${AC} ${Fred}perl${AC} is configured failure"
-            cd - >/dev/null
-            _FN_exit 
-        fi 
-        cd - >/dev/null
-        echo
-        if [ ! -e "${_JLLCFG_BIN_PERL}" ]; then
-            echo -e \
-            "${Bred}${Fyellow}JLL-Exit:${AC} ${Fred}perl${AC} is compiled or installed failure"
-            _FN_exit
-        else
-            echo -e "JLL: ${Fred}perl${AC} was installed to" \
-                    "${Bgreen}${Fblack}${_JLLCFG_BIN_PERL}${AC}"
-        fi
-    else
-        echo -e "JLL: ${Fred}perl${AC} has already been installed to" \
-                "${Bgreen}${Fblack}${_JLLCFG_BIN_PERL}${AC}"
-    fi
-}
-
-_JLLCFG_SRC_DSS="$(pwd)/dss"
-_JLLCFG_BIN_DSS="/usr/local/sbin/DarwinStreamingServer"
-_JLLCFG_CONTENT_DSS="elif [ -x ${_JLLCFG_BIN_PERL} ]; then \
-    perldef=${_JLLCFG_BIN_PERL} \
-"
-
 declare -a _Dss_lstTarget=(
     DarwinStreamingServer
     StreamingLoadTool/StreamingLoadTool
@@ -923,6 +832,66 @@ declare -a _Dss_lstTarget=(
     QTFileTools/QTTrackInfo.tproj/QTTrackInfo
 )
 
+
+function _FN_exit()
+{
+    [ x"${GvPageUnit}" != x ] && unset GvPageUnit
+    [ x"${GvPageMenuUtilsContent}" != x ] && unset GvPageMenuUtilsContent
+    [ x"${_Perl_lstTarget}" != x ] && unset _Dss_lstTarget
+    [ x"${_Dss_lstTarget}" != x ] && unset _Dss_lstTarget
+    [ x"${_JLLCFG_BIN_PERL}" != x ] && unset _JLLCFG_BIN_PERL
+    [ x"${_JLLCFG_BIN_DSS}" != x ] && unset _JLLCFG_BIN_DSS
+    [ x"${_JLLCFG_SRC_PERL}" != x ] && unset _JLLCFG_SRC_PERL
+    [ x"${_JLLCFG_SRC_DSS}" != x ] && unset _JLLCFG_SRC_DSS
+    [ x"${_DT_}" != x ] && unset _DT_ 
+    [ x"${_JLLCFG_CONTENT_DSS}" != x ] && unset _JLLCFG_CONTENT_DSS
+    echo
+    exit 0
+}
+
+
+
+function _FN_clean_perl()
+{
+more >&1<<EOF
+
+${Bseablue}${Fblack}==================================================${AC}
+${Bseablue}${Fblack}Clean: ...${Fred}perl${Fblack}...dss...                           ${AC}
+${Bseablue}${Fblack}==================================================${AC}
+
+EOF
+    _BIN_PERL="${_JLLCFG_BIN_PERL%%/${_JLLCFG_PERL}*}/${_JLLCFG_PERL}"
+    if [ x"${_BIN_PERL}" != x -a -e "${_BIN_PERL}" ]; then
+        echo "JLL: Removing Bin Path @ ${_BIN_PERL}"
+        rm -rf ${_BIN_PERL}
+    fi
+    [ x"${_BIN_PERL}" != x ] && unset _BIN_PERL
+
+    if [ x"${_JLLCFG_SRC_PERL}" != x -a -e "${_JLLCFG_SRC_PERL}" ]; then
+        cd ${_JLLCFG_SRC_PERL}
+        [ x"$(ls | grep -Ei 'makefile ')" != x ] && make clean
+        [ x"$(ls | grep -Ei 'make_perl_at_.*\.log')" != x ] && rm -rf make_perl_at_*.log
+        cd - >/dev/null
+    fi
+    if [ x"${_Perl_lstTarget}" != x ]; then
+        _Perl_lstTargetSZ=${#_Perl_lstTarget[@]}
+        for((_Perl_i=0; _Perl_i<_Perl_lstTargetSZ; _Perl_i++)) {
+            _Perl_entry=${_Perl_lstTarget[_Perl_i]}
+            [ x"${_Perl_entry}" != x ] && _Perl_entry="${_JLLCFG_SRC_PERL}/${_Perl_entry}" \
+                                       || _Perl_entry=""
+            if [ x"${_Perl_entry}" != x -a -e "${_Perl_entry}" ]; then
+                echo "JLL: Removing rubbish @ ${_Perl_entry}"
+                rm -rf ${_Perl_entry}
+            fi
+        }
+        [ x"${_Perl_lstTargetSZ}" != x ] && unset _Perl_lstTargetSZ
+    fi
+    echo
+    echo -e "JLL: ${Fred}perl${AC} was cleaned over."
+    echo
+}
+
+
 function _FN_clean_dss()
 {
 more >&1<<EOF
@@ -938,23 +907,93 @@ EOF
         ./Uninstall
         cd - >/dev/null
     fi
-    [ x"$(ls | grep -Ei 'make_dss_at_.*\.log')" != x ] && rm -rf make_dss_at_*.log
+    if [ x"${_JLLCFG_SRC_DSS}" != x -a -e ${_JLLCFG_SRC_DSS} ]; then
+        cd ${_JLLCFG_SRC_DSS}
+        [ x"$(ls | grep -Ei 'make_dss_at_.*\.log')" != x ] && rm -rf make_dss_at_*.log
+        cd - >/dev/null
+    fi
     if [ x"${_Dss_lstTarget}" != x ]; then
         _Dss_lstTargetSZ=${#_Dss_lstTarget[@]}
         for((_Dss_i=0; _Dss_i<_Dss_lstTargetSZ; _Dss_i++)) {
             _Dss_entry=${_Dss_lstTarget[_Dss_i]}
             [ x"${_Dss_entry}" != x ] && _Dss_entry="${_JLLCFG_SRC_DSS}/${_Dss_entry}" \
                                       || _Dss_entry=""
-            if [ -e "${_Dss_entry}" ]; then
+            if [ x"${_Dss_entry}" != x -a -e "${_Dss_entry}" ]; then
                 echo "JLL: Removing rubbish @ ${_Dss_entry}"
                 rm -rf ${_Dss_entry}
             fi
         }
+        [ x"${_Dss_lstTargetSZ}" != x ] && unset _Dss_lstTargetSZ
     fi
     echo
     echo -e "JLL: ${Fred}dss${AC} was cleaned over."
     echo
 }
+
+function _FN_clean_pipeline()
+{
+    _FN_clean_dss
+    _FN_clean_perl
+}
+
+
+
+
+function _FN_build_perl()
+{
+more >&1<<EOF
+
+${Bseablue}${Fblack}==================================================${AC}
+${Bseablue}${Fblack}Build: ...${Fred}perl${Fblack}...dss...                           ${AC}
+${Bseablue}${Fblack}==================================================${AC}
+
+EOF
+    # Check if perl is installed or not
+    if [ ! -e "${_JLLCFG_BIN_PERL}" ]; then
+        if [ ! -e "${_JLLCFG_SRC_PERL}" ]; then
+            echo -e "${Bred}${Fyellow}JLL-Exit:${AC} not found" \
+                    "${Bred}${Fwhite}${_JLLCFG_SRC_PERL}${AC}"
+            _FN_clean_pipeline
+            _FN_exit 
+        fi
+        cd ${_JLLCFG_SRC_PERL}
+        [ x"$(ls | grep -Ei '^makefile$')" != x ] && make clean
+        [ x"$(ls | grep -Ei 'make_perl_at_.*\.log')" != x ] && rm -rf make_perl_at_*.log
+        _BIN_PERL="${_JLLCFG_BIN_PERL%%/${_JLLCFG_PERL}*}/${_JLLCFG_PERL}"
+        if [ x"${_BIN_PERL}" != x -a -e "${_BIN_PERL}" ]; then
+            echo "JLL: Removing Bin Path @ ${_BIN_PERL}"
+            rm -rf ${_BIN_PERL}
+        fi
+        ./Configure -des -Dprefix=${_BIN_PERL} 2>&1 | tee make_perl_at_${_DT_}.log
+        [ x"${_BIN_PERL}" != x ] && unset _BIN_PERL
+        if [ x"$(ls | grep -Ei '^makefile$')" != x ]; then
+            make 2>&1 | tee -a make_perl_at_${_DT_}.log
+            make install 2>&1 | tee -a make_perl_at_${_DT_}.log
+        else
+            echo -e "${Bred}${Fyellow}JLL-Exit:${AC} ${Fred}perl${AC} is configured failure"
+            cd - >/dev/null
+            _FN_clean_pipeline
+            _FN_exit
+        fi 
+        cd - >/dev/null
+        echo
+        if [ ! -e "${_JLLCFG_BIN_PERL}" ]; then
+            echo -e \
+            "${Bred}${Fyellow}JLL-Exit:${AC} ${Fred}perl${AC} is compiled or installed failure"
+            _FN_clean_pipeline
+            _FN_exit
+        else
+            echo -e "JLL: ${Fred}perl${AC} was installed to" \
+                    "${Bgreen}${Fblack}${_JLLCFG_BIN_PERL}${AC}"
+        fi
+    else
+        echo -e "JLL: ${Fred}perl${AC} has already been installed to" \
+                "${Bgreen}${Fblack}${_JLLCFG_BIN_PERL}${AC}"
+    fi
+}
+
+
+
 
 
 function _FN_build_dss()
@@ -972,6 +1011,7 @@ EOF
         if [ ! -e "${_JLLCFG_SRC_DSS}" ]; then
             echo -e "${Bred}${Fyellow}JLL-Exit:${AC} not found" \
                     "${Bred}${Fwhite}${_JLLCFG_SRC_DSS}${AC}"
+            _FN_clean_pipeline
             _FN_exit
         fi
         cd ${_JLLCFG_SRC_DSS}
@@ -983,6 +1023,7 @@ EOF
                         "${Fred}$(pwd)/DarwinStreamingSrvr-$(uname)/Install${AC}"
                 echo -e "${Bred}${Fyellow}JLL-Exit:${AC} ${Fred}dss${AC} is compiled failure"
                 cd - >/dev/null
+                _FN_clean_pipeline
                 _FN_exit
             fi
             cd - >/dev/null
@@ -993,32 +1034,38 @@ EOF
             _isCHK=$(grep -En "perldef=${_JLLCFG_BIN_PERL}" \
                      ${_JLLCFG_SRC_DSS}/DarwinStreamingSrvr-$(uname)/Install 2>/dev/null)
             if [ x"${_isCHK}" = x ]; then
-                _isCHK=$(grep -En "perldef=/usr/local/bin/perl" \
+                _isCHK=$(grep -En "perldef=/usr/freeware/bin/perl" \
                          ${_JLLCFG_SRC_DSS}/DarwinStreamingSrvr-$(uname)/Install 2>/dev/null)
  
                 _CNT=0
                 _Lines=${_isCHK%%:*}
                 for _Line in ${_Lines}; do
-                    $((_CNT++))
+                    _CNT=$((_CNT+1))
                 done
                 if [ ${_CNT} -eq 1 ]; then
                     sed -e "${_Lines} a ${_JLLCFG_CONTENT_DSS}" -i \
                         ${_JLLCFG_SRC_DSS}/DarwinStreamingSrvr-$(uname)/Install
+                    echo -e \
+                        "JLL: ${Fred}${_JLLCFG_SRC_DSS}/DarwinStreamingSrvr-$(uname)/Install${AC}"
+                    echo -e \
+                        "     is inserted the ${Fred}customized perl${AC} successfully @${_Lines}."
                 else
                     echo -e \
                         "${Bred}${Fyellow}JLL-Exit:${AC}" \
-                        "${Fred}DarwinStreamingSrvr-$(uname)/Install${AC} is invalid - ${_CNT}"
-                    _FN_clean_dss
+                        "${Fred}DarwinStreamingSrvr-$(uname)/Install${AC} is invalid."
+                    echo -e "JLL-Reason: the number of the matched line (${_CNT}) is more than 1"
+                    _FN_clean_pipeline
                     _FN_exit
                 fi
             fi
             cd ${_JLLCFG_SRC_DSS}/DarwinStreamingSrvr-$(uname)
-            #./Install
+            ./Install
         fi
         cd - >/dev/null
         echo
         if [ ! -e "${_JLLCFG_BIN_DSS}" ]; then
             echo -e "${Bred}${Fyellow}JLL-Exit:${AC} ${Fred}dss${AC} is installed failure"
+            _FN_clean_pipeline
             _FN_exit
         else
             echo -e "JLL: ${Fred}dss${AC} was installed successfully."
@@ -1032,14 +1079,107 @@ EOF
 
 function _FN_build_pipeline()
 {
-    #_FN_build_perl
-    _FN_build_dss
-}
+#    _FN_build_perl
+#    _FN_build_dss
+#    _FN_exit
+cat >$(pwd)/iDSS_executor<<EOF
+#!/bin/bash
+#
+# Copyright(c) 2017-2100.   jielong.lin    All rights reserved.
+#
+# Created by jielong.lin [jielong.lin@qq.com/493164984@qq.com] @ 2017-06-22
+#
 
-function _FN_clean_pipeline()
-{
-    #_FN_clean_perl
-    _FN_clean_dss
+# adapt to more/echo/less and so on
+  ESC=
+  AC=${ESC}[0m
+  Fblack=${ESC}[30m
+  Fred=${ESC}[31m
+  Fgreen=${ESC}[32m
+  Fyellow=${ESC}[33m
+  Fblue=${ESC}[34m
+  Fpink=${ESC}[35m
+  Fseablue=${ESC}[36m
+  Fwhite=${ESC}[37m
+  Bblack=${ESC}[40m
+  Bred=${ESC}[41m
+  Bgreen=${ESC}[42m
+  Byellow=${ESC}[43m
+  Bblue=${ESC}[44m
+  Bpink=${ESC}[45m
+  Bseablue=${ESC}[46m
+  Bwhite=${ESC}[47m
+
+
+
+JLLPATH="\$(which \$0)"
+# ./xxx.sh
+# ~/xxx.sh
+# /home/xxx.sh
+# xxx.sh
+if [ x"\${JLLPATH}" != x ]; then
+    __CvScriptName=\${JLLPATH##*/}
+    __CvScriptPath=\${JLLPATH%/*}
+    if [ x"\${__CvScriptPath}" = x ]; then
+        __CvScriptPath="\$(pwd)"
+    else
+        __CvScriptPath="\$(cd \${__CvScriptPath};pwd)"
+    fi
+    if [ x"\${__CvScriptName}" = x ]; then
+        echo
+        echo "\${Fred}JLL-Exit::\${AC} Not recognize the command \"\$0\", then exit - 0"
+        echo
+        exit 0
+    fi
+else
+    echo
+    echo "\${Fred}JLL-Exit::\${AC} Not recognize the command \"\$0\", then exit - 1"
+    echo
+    exit 0
+fi
+JLLPATH="\${__CvScriptPath}"
+
+if [ ! -e "${_JLLCFG_BIN_DSS}" ]; then
+    echo -e "\${Fred}JLL-Exit::\${AC} not found \${Fgreen}${_JLLCFG_BIN_DSS}\${AC}"
+    exit 0
+fi
+if [ ! -e "${_JLLCFG_BIN_SAS}" ]; then
+    echo -e "\${Fred}JLL-Exit::\${AC} not found \${Fgreen}${_JLLCFG_BIN_SAS}\${AC}"
+    exit 0
+fi
+
+if [ x"\$1" = x"start" ]; then
+    isCHK_1=\$(ps ax | awk '{print \$1" " \$5}' | awk '/DarwinStreamingServer/ {print \$1}')
+    isCHK_2=\$(ps ax | awk '/streamingadminserver.pl/ {print \$1}')
+    if [ x"\${isCHK_1}" != x ]; then
+        ${_JLLCFG_BIN_DSS}
+    else
+        echo -e "\${Fseablue}JLL::\${AC} \${Fgreen}DarwinStreamingServer is running\${AC}"
+    fi
+
+    if [ x"\${isCHK_2}" != x ]; then
+        ${_JLLCFG_BIN_SAS}
+    else
+        echo -e "\${Fseablue}JLL::\${AC} \${Fgreen}streamingadminserver.pl is running\${AC}"
+    fi
+fi
+
+if [ x"\$1" = x"stop" ]; then
+    if [ x"\$(uname)" = x"Linux" ]; then
+        ps ax | awk '{print \$1" " \$5}' | awk '/DarwinStreamingServer/ {print \$1}' \
+              | xargs -r kill -9 2>/dev/null
+        ps ax | awk '/streamingadminserver.pl/ {print \$1}' | xargs -r kill -9 2>/dev/null
+    else
+        echo -e "\${Fred}JLL-Exit::\${AC} \${Fgreen}Platform Type \$(uname) isnot Linux\${AC}"
+        exit 0
+    fi
+fi
+
+
+
+EOF
+    chmod +x $(pwd)/iDSS_executor
+
 }
 
 

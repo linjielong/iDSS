@@ -35,21 +35,54 @@ if [ $USERID = 0 ]; then
 		ps -aef | awk '/streamingadminserver.pl/ {print $2}' | xargs -n 1 kill -9 
 	fi
 
-	echo;echo Darwin Streaming Server Cleanup all users;echo
-	# Remove the default admin username to /etc/streaming/qtusers
-	/usr/local/bin/qtpasswd -F -d 'aGFja21l' > /dev/null
+    if [ -e /usr/local/bin/qtpasswd ]; then
+	    echo;echo Darwin Streaming Server Cleanup all users by qtpasswd;echo
+	    # Remove the default admin username to /etc/streaming/qtusers
+	    /usr/local/bin/qtpasswd -F -d 'aGFja21l' > /dev/null
 	
-    admin_username=$(grep -E 'admin:' /etc/streaming/qtgroups 2>/dev/null | sed 's/admin://g')
-	# Delete admin username to /etc/streaming/qtusers
-    for __admin_un in ${admin_username}; do
-	    [ x"$__admin_un" != x ] && /usr/local/bin/qtpasswd -F -d $__admin_un
-    done
+        admin_username=$(grep -E 'admin:' /etc/streaming/qtgroups 2>/dev/null | sed 's/admin://g')
+	    # Delete admin username to /etc/streaming/qtusers
+        for __admin_un in ${admin_username}; do
+	        [ x"$__admin_un" != x ] && /usr/local/bin/qtpasswd -F -d $__admin_un 2>/dev/null
+        done
     
-    username=$(grep -E '^.*:' /etc/streaming/qtusers 2>/dev/null)
-    for __un in ${username}; do
-        __un=${__un%%:*}
-        [ x"$un" != x ] && /usr/local/bin/qtpasswd -F -d $un
-    done
+        username=$(grep -E '^.*:' /etc/streaming/qtusers 2>/dev/null)
+        for __un in ${username}; do
+            __un=${__un%%:*}
+            [ x"$un" != x ] && /usr/local/bin/qtpasswd -F -d $un  2>/dev/null
+        done
+
+	    # Remove the user qtss to /etc/streaming/qtusers
+	    /usr/local/bin/qtpasswd -F -d 'qtss' > /dev/null
+    fi
+    if [ -e /usr/sbin/userdel ]; then
+	    echo;echo Darwin Streaming Server Cleanup all users by /usr/sbin/userdel;echo
+	    # Remove the default admin username to /etc/streaming/qtusers
+        echo "Removing the default administrator \"aGFja21l\""
+	    /usr/sbin/userdel -r 'aGFja21l' > /dev/null 2>/dev/null
+	
+        admin_username=$(grep -E 'admin:' /etc/streaming/qtgroups 2>/dev/null | sed 's/admin://g')
+	    # Delete admin username to /etc/streaming/qtusers
+        for __admin_un in ${admin_username}; do
+	        if [ x"$__admin_un" != x -a x"$(ls /home/$__admin_un 2>/dev/null)" = x ]; then
+                echo "Removing the administrator \"$__admin_un\""
+                /usr/sbin/userdel -r $__admin_un 2>/dev/null
+            fi
+        done
+    
+        username=$(grep -E '^.*:' /etc/streaming/qtusers 2>/dev/null)
+        for __un in ${username}; do
+            __un=${__un%%:*}
+            if [ x"$un" != x -a x"$(ls /home/$un 2>/dev/null)" = x ]; then
+                echo "Removing the user \"${un}\""
+                /usr/sbin/userdel -r $un 2>/dev/null
+            fi
+        done
+        echo "Removing the user \"qtss\"" 
+        /usr/sbin/userdel -r qtss 2>/dev/null
+    fi
+
+
 
 ## REMOVED OLD VERSION ##
 
