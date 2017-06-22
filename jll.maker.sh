@@ -5,7 +5,7 @@
 #   Author:       jielong.lin 
 #   Email:        493164984@qq.com
 #   DateTime:     2017-06-21 00:09:54
-#   ModifiedTime: 2017-06-22 15:39:20
+#   ModifiedTime: 2017-06-22 15:57:09
 
 JLLPATH="$(which $0)"
 JLLPATH="$(dirname ${JLLPATH})"
@@ -30,6 +30,7 @@ declare -i GvPageUnit=10
 declare -a GvPageMenuUtilsContent=(
   "build_pipeline: ...perl...dss..."
   "clean_pipeline: ...dss...perl..."
+  "clean_environment: clean up the current developped environment"
 )
 
 
@@ -860,12 +861,15 @@ ${Bseablue}${Fblack}Clean: ...${Fred}perl${Fblack}...dss...                     
 ${Bseablue}${Fblack}==================================================${AC}
 
 EOF
+
+  if [ x"$1" = x"all" ]; then
     _BIN_PERL="${_JLLCFG_BIN_PERL%%/${_JLLCFG_PERL}*}/${_JLLCFG_PERL}"
     if [ x"${_BIN_PERL}" != x -a -e "${_BIN_PERL}" ]; then
         echo "JLL: Removing Bin Path @ ${_BIN_PERL}"
         rm -rf ${_BIN_PERL}
     fi
     [ x"${_BIN_PERL}" != x ] && unset _BIN_PERL
+  fi
 
     if [ x"${_JLLCFG_SRC_PERL}" != x -a -e "${_JLLCFG_SRC_PERL}" ]; then
         cd ${_JLLCFG_SRC_PERL}
@@ -901,12 +905,15 @@ ${Bseablue}${Fblack}Clean: ...perl...${Fred}dss${Fblack}...                     
 ${Bseablue}${Fblack}==================================================${AC}
 
 EOF
+  if [ x"$1" = x"all" ]; then
     if [ -e "${_JLLCFG_SRC_DSS}/DarwinStreamingSrvr-$(uname)/Uninstall" ]; then
         echo -e "JLL: uninstall Darwing Streaming Server"
         cd ${_JLLCFG_SRC_DSS}/DarwinStreamingSrvr-$(uname)
         ./Uninstall
         cd - >/dev/null
     fi
+  fi
+
     if [ x"${_JLLCFG_SRC_DSS}" != x -a -e ${_JLLCFG_SRC_DSS} ]; then
         cd ${_JLLCFG_SRC_DSS}
         [ x"$(ls | grep -Ei 'make_dss_at_.*\.log')" != x ] && rm -rf make_dss_at_*.log
@@ -930,10 +937,18 @@ EOF
     echo
 }
 
-function _FN_clean_pipeline()
+
+function _FN_clean_environment()
 {
     _FN_clean_dss
     _FN_clean_perl
+}
+
+
+function _FN_clean_pipeline()
+{
+    _FN_clean_dss  "all"
+    _FN_clean_perl "all"
 
     [ -e "${_JLLCFG_BIN_SAS%/*}/.UtilsLibrary" ] && rm -rvf ${_JLLCFG_BIN_SAS%/*}/.UtilsLibrary
     [ -e "${_JLLCFG_BIN_SAS%/*}/jll.iDSS_executor.sh" ] \
@@ -1303,18 +1318,32 @@ fi
 echo
 Lfn_PageMenuUtils _MenuID  "Select" 7 4 \
                             "***** Menu For Darwin Streaming Server  (q: quit) *****"
+
+# "build_pipeline: ...perl...dss..."
 if [ x"${_MenuID}" = x"${GvPageMenuUtilsContent[0]}" ]; then
     [ x"${_MenuID}" != x ] && unset _MenuID
     [ x"${GvPageMenuUtilsContent}" != x ] && unset GvPageMenuUtilsContent
     [ x"${GvPageUnit}" != x ] && unset GvPageUnit
     _FN_build_pipeline
-    exit 0
+    _FN_exit 
 fi
+
+# "clean_pipeline: ...dss...perl..."
 if [ x"${_MenuID}" = x"${GvPageMenuUtilsContent[1]}" ]; then
     [ x"${_MenuID}" != x ] && unset _MenuID
     [ x"${GvPageMenuUtilsContent}" != x ] && unset GvPageMenuUtilsContent
     [ x"${GvPageUnit}" != x ] && unset GvPageUnit
     _FN_clean_pipeline
-    exit 0
+    _FN_exit 
 fi
+
+#  "clean_environment: clean up the current developped environment"
+if [ x"${_MenuID}" = x"${GvPageMenuUtilsContent[2]}" ]; then
+    [ x"${_MenuID}" != x ] && unset _MenuID
+    [ x"${GvPageMenuUtilsContent}" != x ] && unset GvPageMenuUtilsContent
+    [ x"${GvPageUnit}" != x ] && unset GvPageUnit
+    _FN_clean_environment
+    _FN_exit 
+fi
+
 
